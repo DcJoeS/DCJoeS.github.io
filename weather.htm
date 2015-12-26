@@ -4,8 +4,50 @@
 <head>
     <meta charset="utf-8" />
     <title>My Weather</title>
+        <style type="text/css" media="screen">
+        body {
+                background-image: url("images/whitetail-woods-regional-park.jpg");
+                background-repeat:no-repeat;
+                background-size:cover;
+                background-color:white;
+        }
+        div#banner {
+            position: absolute;
+            top:0;
+            left:0;
+            background-color:#006600;
+            width: 100%;
+        }
+        div#banner-content{
+            width:100%;
+            height:100px;
+            font-size:400%;
+            font-style:normal;
+            color:white;
+            font-family:Verdana, Geneva, Tahoma, sans-serif;
+        }
+        div#page{
+            position:absolute;
+            top: 110px;
+        }
+        div#page-content{
+            font-size:250%;
+            font-style:normal;
+            color:black;
+            font-family:Verdana, Geneva, Tahoma, sans-serif;
+        }
+    </style>
 </head>
 <body>
-<a href="http://www.wunderground.com/weatherstation/WXDailyHistory.asp?ID=KMNROSEM16"><img src="http://banners.wunderground.com/cgi-bin/banner/ban/wxBanner?bannertype=pws250&weatherstationcount=KMNROSEM16" width="250" height="150" border="0" alt="Weather Underground PWS KMNROSEM16" /></a>
+        <div id="banner">
+        <div id="banner-content">
+            My Weather
+        </div>
+    </div>
+    <div id="page">
+        <div id="page-content">
+        <a href="http://www.wunderground.com/weatherstation/WXDailyHistory.asp?ID=KMNROSEM16"><img src="http://banners.wunderground.com/cgi-bin/banner/ban/wxBanner?bannertype=pws250&weatherstationcount=KMNROSEM16" width="250" height="150" border="0" alt="Weather Underground PWS KMNROSEM16" /></a>
+         </div>
+    </div>
 </body>
 </html>

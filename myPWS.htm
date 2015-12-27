@@ -11,11 +11,11 @@ jQuery(document).ready(function($) {
   //var location = parsed_json['current_observation']['temp_c'];
   var ob_time = parsed_json['current_observation']['observation_time']
   var temp_f = parsed_json['current_observation']['temp_f'];
-  var wind = parsed_json['current_observation']['wind_string']
+  var wind_s = parsed_json['current_observation']['wind_string']
   var rel_hum = parsed_json['current_observation']['relative_humidity']
   //alert("Current temperature at " + ob_time + " is: " + temp_f);
   });
-  document.write(ob_time +'<BR>' + 'Temperature: ' + temp_f + 'F' +'<BR>' + 'Wind ' + wind + '<BR>' + 'Relative Humidity: ' + rel_hum)
+  document.write(ob_time +'<BR>' + 'Temperature: ' + temp_f + 'F' +'<BR>' + 'Wind ' + wind_s + '<BR>' + 'Relative Humidity: ' + rel_hum)
   }
 });
 </script>

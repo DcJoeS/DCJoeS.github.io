@@ -12,7 +12,8 @@ jQuery(document).ready(function($) {
   var ob_time = parsed_json['current_observation']['observation_time']
   var temp_f = parsed_json['current_observation']['temp_f'];
   //alert("Current temperature at " + ob_time + " is: " + temp_f);
-  document.write(ob_time +  temp_f + "F")
+  document.write(ob_time)
+  document.write(temp_f + "F")
   }
   });
 });

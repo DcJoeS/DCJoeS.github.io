@@ -11,8 +11,9 @@ jQuery(document).ready(function($) {
   //var location = parsed_json['current_observation']['temp_c'];
   var ob_time = parsed_json['current_observation']['observation_time']
   var temp_f = parsed_json['current_observation']['temp_f'];
+  var rel_hum = parsed_json['current_observation']['relative_humidity']
   //alert("Current temperature at " + ob_time + " is: " + temp_f);
-  document.write(ob_time +'<BR>' + temp_f + 'f')
+  document.write(ob_time +'<BR>' + 'Temperature: ' temp_f + 'F' +'<BR>' + 'Relative Humidity: ' + rel_hum)
   }
   });
 });

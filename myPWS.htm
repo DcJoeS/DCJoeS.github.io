@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
+    <link rel="stylesheet" type="text/css" href="css/myPWS.css"/>
+<style>
+    h1    {color:red;}
+</style>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 <script>
 jQuery(document).ready(function($) {
@@ -14,7 +18,9 @@ jQuery(document).ready(function($) {
   var wind_s = parsed_json['current_observation']['wind_string']
   var rel_hum = parsed_json['current_observation']['relative_humidity']
   //alert("Current temperature at " + ob_time + " is: " + temp_f);
+  document.write('<h1>')
   document.write(ob_time +'<BR>' + 'Temperature: ' + temp_f + 'F' +'<BR>' + 'Relative Humidity: ' + rel_hum)
+  document.write('</h1>')
   }
   });
 });

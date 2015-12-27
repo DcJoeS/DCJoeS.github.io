@@ -2,7 +2,7 @@
 <script>
 jQuery(document).ready(function($) {
   $.ajax({
-  url : "http://api.wunderground.com/api/62638971d08649b1/geolookup/conditions/q/IA/Cedar_Rapids.json",
+  url : "http://api.wunderground.com/api/62638971d08649b1/conditions/q/pws:KMNROSEM16.json",
   dataType : "jsonp",
   success : function(parsed_json) {
   var location = parsed_json['location']['city'];

@@ -49,6 +49,36 @@
                     <th>Pressure</th>
                     <th id="pressure_i"></th>
                 </tr>
+                <tr>
+                    <th>Dew Point</th>
+                    <th id="dewpt_s"></th>
+                </tr>
+                <tr>
+                    <th>Heat Index</th>
+                    <th id="heat_in"></th>
+                </tr>
+                <tr>
+                    <th>Wind Chill</th>
+                    <th id="wind_ch"></th>
+                </tr>
+                <tr>
+                    <th>Feels Like</th>
+                    <th id="feelslike_s"></th>
+                </tr>
+                <tr>
+                    <th>Visibility</th>
+                    <th id="vis"></th>
+                </tr>
+                <tr>
+                    <th>Precipitation Today</th>
+                    <th id="precip_today"></th>
+                </tr>
+                <tr>
+                    <th colspan="2">
+                        <a href="http://www.wunderground.com/US/MN/Rosemount.html"  class="btn btn-info" role="button">Forecast</a>
+                        <a href="http://www.wunderground.com/weatherstation/WXDailyHistory.asp?ID=KMNROSEM16"  class="btn btn-info" role="button">History</a>
+                    </th>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -64,6 +94,14 @@
     document.getElementById("rel_h").innerHTML = parsed_json['current_observation']['relative_humidity'];
     document.getElementById("wind_s").innerHTML = parsed_json['current_observation']['wind_string'];
     document.getElementById("pressure_i").innerHTML = parsed_json['current_observation']['pressure_in']+" inHG";
+    document.getElementById("dewpt_s").innerHTML = parsed_json['current_observation']['dewpoint_string'];
+    document.getElementById("heat_in").innerHTML = parsed_json['current_observation']['heat_index_string'];
+    document.getElementById("wind_ch").innerHTML = parsed_json['current_observation']['windchill_string'];
+    document.getElementById("feelslike_s").innerHTML = parsed_json['current_observation']['feelslike_string'];
+    document.getElementById("vis").innerHTML = parsed_json['current_observation']['visibility_mi']+" mi";
+    document.getElementById("precip_today").innerHTML = parsed_json['current_observation']['precip_today_string'];
+    document.getElementById("forecast_ur").innerHTML = parsed_json['current_observation']['forecast_url'];
+    document.getElementById("history_ur").innerHTML = parsed_json['current_observation']['history_url'];
     }
     });
     });

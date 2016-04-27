@@ -32,7 +32,7 @@
         "sortField": "numViews",
         "sortOrder": "desc",
         "showRatings": false,
-        "showViews": false,
+        "showViews": true,
         "displaySharingAttribute": false,
         "itemSearchDefaultValue": "",
         "enableAutoComplete": true,

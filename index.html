@@ -45,16 +45,18 @@ img {
   font-weight: bold;
   font-size: 40px;
 }
-.container img {vertical-align: middle;}
+.container img {
+    vertical-align: middle;
+}
 
 .container .content {
   position: absolute;
   bottom: 0;
-  background: rgb(0, 0, 0); /* Fallback color */
-  background: rgba(31, 26, 53, 0.75); /* Black background with 0.75 opacity */
+  background: rgb(31, 26, 53); /* Fallback color */
+  background: linear-gradient(180deg, rgba(31,26,53,0) 0%, rgba(31,26,53,1) 50%, rgba(66,52,105,1) 100%);
   color: #f1f1f1;
   width: 100%;
-  padding: 20px;
+  padding: 10px;
 }
 </style>
   <body>
@@ -64,10 +66,9 @@ img {
     <div class="container">
         <img src="images/hero/hero.png" alt="elevation surface" width="1000" height="300" style="width:100%">
         <div class="content">
-            <h1>Sapletal, GISP</h1>
+            <h1>Joe Sapletal, GISP</h1>
         </div>
       </div>
-    <h1>Joe Sapletal, GISP</h1>
     <h2>GIS Manager</h2>
     <h2>Dakota County Information Technology</h2>
     <h2>Office of GIS</h2>

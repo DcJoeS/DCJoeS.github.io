@@ -1,5 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+  <style> .loader {
+    position: fixed;
+    background-color: rgb(31,26,53) ;
+    opacity: 1;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 10;
+  }
+  </style>
+  <div class="loader">
+    <div class="container-fluid mt-3">
+      <div class="row"style="margin-top: 32px;">
+        <div class="col"></div>
+        <div class="img-center">
+        <div class="col"><img src="images\hero\hero.png" class="rounded-circle" alt="Elevation Surface" width="80" height="80" class="img-center"></div>
+        </div>
+        <div class="col"></div>
+      </div>
+      <h1 style="margin-top: 8px;">Joe Sapletal, GISP</h1>
+      <h2>2X MN GIS/LIS Pool Team Champion (2000 & 2001)</h2>
+      <h2>joe.sapletal@co.dakota.mn.us</h2>
+  </div>
+  </div>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +34,7 @@
     <style>
 
   body {
-    background-image: url("images\\backgrounds\\MiesvilleRavineHillshade.png");
-    /* background-image: url("images\\backgrounds\\background_charihawkins.png");*/
+    background-image: url("images\\backgrounds\\TroutBrook_cover.webp");
     background-position: center-top;
     background-repeat: no-repeat;
     background-size: cover;
@@ -165,4 +189,36 @@ a:active {
   <!-- card--> 
 
 </body>
+<style>
+  .loader {
+      -webkit-animation: load-out 6s;
+      animation: load-out 6s;
+      -webkit-animation-fill-mode: forwards;
+      animation-fill-mode: forwards;
+  }
+  
+  @-webkit-keyframes load-out {
+      from {
+          top: 0;
+          opacity: 1;
+      }
+  
+      to {
+          top: 100%;
+          opacity: 0;
+      }
+  }
+  
+  @keyframes load-out {
+      from {
+          top: 0;
+          opacity: 1;
+      }
+  
+      to {
+          top: 100%;
+          opacity: 0;
+      }
+  }
+  </style>
 </html>

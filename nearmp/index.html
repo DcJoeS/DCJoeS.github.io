@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nearmap Panoramic Viewer</title>
+</head>
+<body>
+    <h1>Nearmap Panoramic Viewer</h1>
+    <div id="map-container" style="width: 100%; height: 500px;"></div>
+    <script>
+        // Replace this with your Nearmap API key
+        const mykey = "NzU2YzM2NWQtMWQwOC00OWU3LWJjZDctYjRkNTg2MzllODZh";
+
+        // Get 'coords' variable from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const coords = urlParams.get('coords');
+
+        if (!coords) {
+            document.body.innerHTML = "<p>Error: No coordinates provided in the URL.</p>";
+        } else {
+            const [lat, lon] = coords.split(',');
+
+            // Display panoramic imagery using Nearmap API (replace with the API logic)
+            const mapContainer = document.getElementById('map-container');
+
+            // Example usage: fetching imagery from the Nearmap API
+            const imageURL = `https://api.nearmap.com/xyz/${mykey}/${lat},${lon}/panorama.jpg`;
+
+            const img = document.createElement('img');
+            img.src = imageURL;
+            img.alt = 'Nearmap Panoramic Imagery';
+            img.style.width = "100%";
+            img.style.height = "100%";
+
+            mapContainer.appendChild(img);
+        }
+    </script>
+</body>
+</html>

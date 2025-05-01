@@ -2735,7 +2735,7 @@ const vE = "" + new URL("hcgis-logo-23-NSXNPlne.png", import.meta.url).href,
   wE = { class: "navbar-brand" },
   AE = Ju(() => Q("img", { src: vE, id: "hcgis-logo", alt: "HC GIS logo", tabindex: "0" }, null, -1)),
   RE = [AE],
-  IE = Ju(() => Q("div", { id: "title-cont" }, "Hennepin Oblique Imagery Viewer", -1)),
+  IE = Ju(() => Q("div", { id: "title-cont" }, "Dakota County Oblique Air Photo Viewer", -1)),
   xE = { id: "hennepinLogo", class: "navbar-brand py-0 mr-1", href: "https://www.hennepin.us/", target: "_blank" },
   OE = { key: 0, src: TE, width: "275px", class: "d-inline-block align-top", alt: "Hennepin logo" };
 function SE(e, t, n, i, s, r) {
@@ -2789,7 +2789,7 @@ const kE = ia(PE, [
       ["render", FE],
       ["__scopeId", "data-v-03cc4813"],
   ]),
-  St = { DEMO_API_KEY: "NGM0ZDI0YjgtNTUzYy00Yzk3LWFkYjEtMGZmZTdhNTExYjAy", CENTER: [-93.25, 45], MIN_ZOOM: 0, MAX_ZOOM: 19, ZOOM: 13, EXTENT: [-94.1, 44.75, -93, 45.3], SINCE: "", UNTIL: "" },
+  St = { DEMO_API_KEY: "NzU2YzM2NWQtMWQwOC00OWU3LWJjZDctYjRkNTg2MzllODZh", CENTER: [-93.25, 45], MIN_ZOOM: 0, MAX_ZOOM: 24, ZOOM: 13, EXTENT: [-94.1, 44.75, -93, 45.3], SINCE: "", UNTIL: "" },
   Yi = {
       degreesToRadians(e) {
           return e * (Math.PI / 180);

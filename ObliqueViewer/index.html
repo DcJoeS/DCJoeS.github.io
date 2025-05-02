@@ -101,10 +101,39 @@
       #displayedSurveyElementId {
         padding-bottom: 5px;
       }
+
+      #menu {
+        background-color: #333;
+        color: white;
+        padding: 15px;
+        text-align: left;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+      }
+
+      #menu a {
+        color: white;
+        text-decoration: none;
+        padding: 10px;
+        margin: 5px;
+        display: inline-block;
+      }
+
+      #menu a:hover {
+        background-color: #575757;
+      }
     </style>
   </head>
 
   <body>
+    <div id="menu">
+      <a href="#">Home</a>
+      <a href="#">About</a>
+      <a href="#">Contact</a>
+    </div>
     <div id="map"></div>
     <div class="heading-btn" >
       <div class="center"><button id="northElementId" value="North" class="usa-button usa-button--active">North</button></div>

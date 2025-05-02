@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nearmap Oblique Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #map-container {
+            width: 80%;
+            height: 600px;
+            margin: auto;
+            border: 1px solid #ccc;
+            position: relative;
+        }
+        .controls {
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        function loadNearmapImage() {
+            let apiKey = "NzU2YzM2NWQtMWQwOC00OWU3LWJjZDctYjRkNTg2MzllODZh";
+            let lat = 41.8781;  // Example latitude (Chicago)
+            let lon = -87.6298; // Example longitude (Chicago)
+            let zoom = 18; // Set appropriate zoom level
+            let orientation = "north"; // Options: north, east, south, west
+
+            let imageUrl = `https://api.nearmap.com/oblique/v2/image?lat=${lat}&lon=${lon}&zoom=${zoom}&orientation=${orientation}&apiKey=${apiKey}`;
+
+            document.getElementById("map-container").style.backgroundImage = `url('${imageUrl}')`;
+            document.getElementById("map-container").style.backgroundSize = "cover";
+        }
+
+        function changeOrientation(direction) {
+            loadNearmapImage(direction);
+        }
+
+        window.onload = loadNearmapImage;
+    </script>
+</head>
+<body>
+    <h1>Nearmap Oblique Image Viewer</h1>
+    <div id="map-container"></div>
+    <div class="controls">
+        <button onclick="changeOrientation('north')">North</button>
+        <button onclick="changeOrientation('east')">East</button>
+        <button onclick="changeOrientation('south')">South</button>
+        <button onclick="changeOrientation('west')">West</button>
+    </div>
+</body>
+</html>

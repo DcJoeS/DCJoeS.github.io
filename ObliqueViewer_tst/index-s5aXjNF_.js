@@ -9853,7 +9853,7 @@ function cT(e, t, n, i, s, r) {
                               "button",
                               {
                                   id: "northElementId",
-                                  class: en(["btn btn-primary primaryColor", s.selectedDirection == "North" ? "activeButton" : "#113c66"]),
+                                  class: en(["btn btn-primary primaryColor", s.selectedDirection == "North" ? "activeButton" : "#B11116"]),
                                   value: "North",
                                   onClick: t[0] || (t[0] = (c) => (s.selectedDirection = "North")),
                               },
@@ -9866,7 +9866,7 @@ function cT(e, t, n, i, s, r) {
                               "button",
                               {
                                   id: "westElementId",
-                                  class: en(["btn btn-primary primaryColor", s.selectedDirection == "West" ? "activeButton" : "#113c66"]),
+                                  class: en(["btn btn-primary primaryColor", s.selectedDirection == "West" ? "activeButton" : "#B11116"]),
                                   value: "West",
                                   onClick: t[1] || (t[1] = (c) => (s.selectedDirection = "West")),
                               },
@@ -9877,7 +9877,7 @@ function cT(e, t, n, i, s, r) {
                               "button",
                               {
                                   id: "vertElementId",
-                                  class: en(["btn btn-primary primaryColor", s.selectedDirection == "Vert" ? "activeButton" : "#113c66"]),
+                                  class: en(["btn btn-primary primaryColor", s.selectedDirection == "Vert" ? "activeButton" : "#B11116"]),
                                   value: "Vert",
                                   onClick: t[2] || (t[2] = (c) => (s.selectedDirection = "Vert")),
                               },
@@ -9888,7 +9888,7 @@ function cT(e, t, n, i, s, r) {
                               "button",
                               {
                                   id: "eastElementId",
-                                  class: en(["btn btn-primary primaryColor", s.selectedDirection == "East" ? "activeButton" : "#113c66"]),
+                                  class: en(["btn btn-primary primaryColor", s.selectedDirection == "East" ? "activeButton" : "#B11116"]),
                                   value: "East",
                                   onClick: t[3] || (t[3] = (c) => (s.selectedDirection = "East")),
                               },
@@ -9901,7 +9901,7 @@ function cT(e, t, n, i, s, r) {
                               "button",
                               {
                                   id: "southElementId",
-                                  class: en(["btn btn-primary primaryColor", s.selectedDirection == "South" ? "activeButton" : "#113c66"]),
+                                  class: en(["btn btn-primary primaryColor", s.selectedDirection == "South" ? "activeButton" : "#B11116"]),
                                   value: "South",
                                   onClick: t[4] || (t[4] = (c) => (s.selectedDirection = "South")),
                               },

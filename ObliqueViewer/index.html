@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html style="width: 100%; height: 100%;">
+  <head>
+    <title>Dakota County Oblique Air-Photo Viewer</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dakota County Oblique Air-Photo Viewer" />
+    <meta name="author" content="Dakota County GIS" />
+    <link rel="shortcut icon" href="https://www.co.dakota.mn.us/siteassets/DCFavIcon.ico">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Dakota County Oblique Air-Photo Viewer">
+    <meta property="og:description" content="View Oblique Air-Photos in Cook County">
+    <meta property="og:image" content="https://www.co.dakota.mn.us/SiteAssets/DakotaCountyLogo_W.png">
+    <meta property="og:title" content="Dakota County Oblique Air-Photo Viewer">
+    <meta property="og:url" content="https://maps.cookcountyil.gov/nearmapOpenlayers/">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="Dakota County Oblique Air-Photo Viewer">
+    <meta name="twitter:creator" content="Dakota County GIS">
+    <meta name="twitter:description" content="View oblique air photos in Dakota County">
+    <meta name="twitter:image" content="https://www.co.dakota.mn.us/SiteAssets/DakotaCountyLogo_W.png">
+    <meta name="twitter:title" content="Dakota County Oblique Air-Photo Viewer">
+    <meta name="twitter:url" content="https://maps.cookcountyil.gov/nearmapOpenlayers/">
+
+    <!-- Global site tag (gtag.js) - Google Analytics
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MGTKNYFQTF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-MGTKNYFQTF');
+    </script> -->
+
+    <!--
+      OpenLayers cdn distributable from:
+      https://openlayers.org/en/latest/doc/quickstart.html
+    -->
+    <script src="openlayers/ol.js"></script>
+
+    <link rel="stylesheet" href="openlayers/ol.css" type="text/css">
+    <link rel="stylesheet" href="assets/uswds/css/styles.css" type="text/css">
+
+    <!-- map controls styling -->
+    <style>
+      #map {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      }
+
+      .heading-btn {
+        position: absolute;
+        bottom: 100px;
+        justify-content: space-around;
+        
+      }
+
+      .heading-btn .center {
+        display: flex;
+        justify-content: center;
+      }
+      .heading-btn button {
+        margin: 10px;
+        background-color: #b11116; /* Green */
+        border: none;
+        color: white;
+        padding: 5px 10px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        width: unset;
+      }
+
+      /* .heading-btn button.selected{
+        background-color:red;
+      } */
+
+
+      .survey-picker {
+        position: absolute;
+        bottom: 10px;
+        display: flex;
+        background: #b11116;
+        justify-content: space-around;
+        padding: 5px;
+      }
+
+      .survey-picker > div {
+        margin-right: 20px;
+      }
+
+      .survey-picker select{
+        display: block;
+      }
+
+      #displayedSurveyElementId {
+        padding-bottom: 5px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="map"></div>
+    <div class="heading-btn" >
+      <div class="center"><button id="northElementId" value="North" class="usa-button usa-button--active">North</button></div>
+      <div>
+        <button id="westElementId" class="usa-button " value="West">West</button>
+        <button id="vertElementId" class="usa-button " value="Vert">Vertical</button>
+        <button id="eastElementId" class="usa-button " value="East">East</button>
+      </div>
+      <div class="center"><button id="southElementId" class="usa-button " value="South">South</button></div>
+
+    </div>
+    <div class="survey-picker">
+      <div>
+        <label class="usa-label" for="survey-options" style = "color: white">Available Surveys</label>
+        <select class="usa-select" title="Survey options" id="survey-options"></select>
+      </div>
+      <div >
+        <label class="usa-label" for="displayedSurveyElementId" style = "color: white">Displayed Survey</label>
+        <div id="displayedSurveyElementId" style = "color: white"></div>
+        <div id='feedbackId' style = "color: white">Email Feedback to <a href="mailto:gis@co.dakota.mn.us" style = "color: white">gis@co.dakota.mn.us</a></div>
+      </div>
+    </div>
+
+    <!-- Nearmap js files - import order is important -->
+    <script src="config.js"></script>
+    <script src="url.js"></script>
+    <script src="math.js"></script>
+    <script src="projections.js"></script>
+    <script src="loader.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>

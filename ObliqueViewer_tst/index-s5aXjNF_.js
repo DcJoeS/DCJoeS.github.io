@@ -2770,7 +2770,7 @@ const LE = ia(bE, [
                           Q("p", null, "Please contact the Office of GIS if you are experiencing any issues or have questions about the Dakota County Oblique Air Photo Viewer."),
                           Q("ul", { class: "list-group list-group-flush" }, [
                               Q("li", { class: "list-group-item contact-li font-weight-bold" }, "Dakota County GIS"),
-                              Q("li", { class: "list-group-item contact-li" }, [yo(" Email: "), Q("a", { href: "mailto:gis@co.dakota.mn.us.us" }, "gis@co.dakota.mn.us.us")]),
+                              Q("li", { class: "list-group-item contact-li" }, [yo(" Email: "), Q("a", { href: "mailto:gis@co.dakota.mn.us" }, "gis@co.dakota.mn.us")]),
                               Q("li", { class: "list-group-item contact-li" }, [yo(" Web: "), Q("a", { href: "https://gis-hennepin.hub.arcgis.com/", target: "_blank" }, "Hennepin GIS Public Portal")]),
                           ]),
                       ]),

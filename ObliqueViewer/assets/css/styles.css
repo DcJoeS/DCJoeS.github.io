@@ -4207,7 +4207,7 @@ button.usa-combo-box__clear-input:focus {
   color: #850d12;
 }
 .usa-button--unstyled:focus {
-  outline: 0.25rem solid #2491ff;
+  outline: 0.25rem solid #B11116;
   outline-offset: 0;
 }
 .usa-button--unstyled:hover, .usa-button--unstyled.usa-button--hover, .usa-button--unstyled:disabled:hover, .usa-button--unstyled:disabled.usa-button--hover, .usa-button--unstyled.usa-button--disabled:hover, .usa-button--unstyled.usa-button--disabled.usa-button--hover, .usa-button--unstyled:active, .usa-button--unstyled.usa-button--active, .usa-button--unstyled:disabled:active, .usa-button--unstyled:disabled.usa-button--active, .usa-button--unstyled.usa-button--disabled:active, .usa-button--unstyled.usa-button--disabled.usa-button--active, .usa-button--unstyled:disabled:focus, .usa-button--unstyled:disabled.usa-focus, .usa-button--unstyled.usa-button--disabled:focus, .usa-button--unstyled.usa-button--disabled.usa-focus, .usa-button--unstyled:disabled, .usa-button--unstyled.usa-button--disabled {

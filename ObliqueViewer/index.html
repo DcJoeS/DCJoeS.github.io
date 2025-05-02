@@ -104,15 +104,18 @@
 
       /* Menu Styling */
       #menu {
-          background-color: #b11116;
-          color: white;
-          height: 40px;
-          padding: 5px 15px;
-          position: fixed;
-          width: 100%;
-          top: 0;
-          left: 0;
-          z-index: 1000;
+        background-color: #b11116;
+        color: white;
+        height: 40px;
+        padding: 5px 15px;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
 
       .menu-container {
@@ -135,18 +138,29 @@
           text-decoration: none;
       }
 
+      /* Hamburger Menu (Pure CSS) */
       .hamburger {
-          font-size: 24px;
+          display: flex;
+          flex-direction: column;
           cursor: pointer;
-          color: white;
+          position: absolute;
           right: 20px;
+          justify-content: center;
+      }
+
+      .bar {
+        width: 25px;
+        height: 3px;
+        background-color: white;
+        margin: 3px 0;
+        transition: 0.3s;
       }
 
       #menu-items {
           display: none;
           list-style: none;
           padding: 0;
-          margin-top: 10px;
+          text-align: right;
           background-color: #b11116;
           width: 150px;
       }
@@ -183,7 +197,11 @@
                 <img src="https://www.co.dakota.mn.us/SiteAssets/DakotaCountyLogo_W.png" alt="Dakota County Logo">
                 <a href="#">Dakota County Oblique Air Photo Viewer</a>
               </div>
-              <div class="hamburger" onclick="toggleMenu()">☰</div>
+              <div class="hamburger" onclick="toggleMenu()">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+              </div>
           </div>
           <ul id="menu-items">
               <li><a href="#">Home</a></li>

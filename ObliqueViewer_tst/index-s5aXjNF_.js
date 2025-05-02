@@ -2767,10 +2767,10 @@ const LE = ia(bE, [
                           Q("button", { type: "button", class: "close", "data-bs-dismiss": "modal", "aria-label": "Close" }, [Q("span", { "aria-hidden": "true" }, "×")]),
                       ]),
                       Q("div", { class: "modal-body", style: { "text-align": "left" } }, [
-                          Q("p", null, "Please contact the GIS Office if you are experiencing any issues or have questions about the Hennepin Oblique Imagery Viewer."),
+                          Q("p", null, "Please contact the Office of GIS if you are experiencing any issues or have questions about the Dakota County Oblique Air Photo Viewer."),
                           Q("ul", { class: "list-group list-group-flush" }, [
-                              Q("li", { class: "list-group-item contact-li font-weight-bold" }, "Hennepin County GIS"),
-                              Q("li", { class: "list-group-item contact-li" }, [yo(" Email: "), Q("a", { href: "mailto:gis.info@hennepin.us" }, "gis.info@hennepin.us")]),
+                              Q("li", { class: "list-group-item contact-li font-weight-bold" }, "Dakota County GIS"),
+                              Q("li", { class: "list-group-item contact-li" }, [yo(" Email: "), Q("a", { href: "mailto:gis@co.dakota.mn.us.us" }, "gis@co.dakota.mn.us.us")]),
                               Q("li", { class: "list-group-item contact-li" }, [yo(" Web: "), Q("a", { href: "https://gis-hennepin.hub.arcgis.com/", target: "_blank" }, "Hennepin GIS Public Portal")]),
                           ]),
                       ]),

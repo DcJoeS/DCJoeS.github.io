@@ -2811,8 +2811,8 @@ abbr[title=required] {
 
 .usa-checkbox__input:checked + [class*=__label]::before,
 .usa-radio__input:checked + [class*=__label]::before {
-  background-color: #005ea2;
-  box-shadow: 0 0 0 2px #005ea2;
+  background-color: #8b0a03;
+  box-shadow: 0 0 0 2px #8b0a03;
 }
 .usa-checkbox__input:disabled + [class*=__label],
 .usa-radio__input:disabled + [class*=__label] {
@@ -2832,7 +2832,7 @@ abbr[title=required] {
 .usa-checkbox__input--tile:checked + [class*=__label],
 .usa-radio__input--tile:checked + [class*=__label] {
   background-color: rgba(0, 94, 162, 0.1);
-  border-color: #005ea2;
+  border-color: #8b0a03;
 }
 .usa-checkbox__input--tile:disabled:checked + [class*=__label],
 .usa-radio__input--tile:disabled:checked + [class*=__label] {
@@ -2849,7 +2849,7 @@ abbr[title=required] {
 }
 
 .usa-radio__input:checked + [class*=__label]::before {
-  box-shadow: 0 0 0 2px #005ea2, inset 0 0 0 2px white;
+  box-shadow: 0 0 0 2px #8b0a03, inset 0 0 0 2px white;
 }
 .usa-radio__input:checked:disabled + [class*=__label]::before {
   background-color: rgba(27, 27, 27, 0.2);
@@ -2888,7 +2888,7 @@ abbr[title=required] {
 
 @media print {
   .usa-radio__input:checked + [class*=__label]::before {
-    box-shadow: inset 0 0 0 2px white, inset 0 0 0 1rem #005ea2, 0 0 0 2px #005ea2;
+    box-shadow: inset 0 0 0 2px white, inset 0 0 0 1rem #8b0a03, 0 0 0 2px #8b0a03;
   }
 }
 
@@ -3055,7 +3055,7 @@ abbr[title=required] {
 }
 
 .usa-file-input__choose {
-  color: #005ea2;
+  color: #8b0a03;
   text-decoration: underline;
   font-weight: normal;
 }
@@ -3063,7 +3063,7 @@ abbr[title=required] {
   color: #54278f;
 }
 .usa-file-input__choose:hover {
-  color: #1a4480;
+  color: #8b0a03;
 }
 .usa-file-input__choose:active {
   color: #8b0a03;
@@ -3114,7 +3114,7 @@ abbr[title=required] {
 }
 
 .usa-file-input--drag .usa-file-input__target {
-  border-color: #005ea2;
+  border-color: #8b0a03;
 }
 
 .usa-file-input--drag .usa-file-input__box {
@@ -3481,8 +3481,8 @@ button.usa-combo-box__clear-input:focus {
   outline-offset: -4px;
 }
 .usa-combo-box__list-option--selected {
-  background-color: #005ea2;
-  border-color: #005ea2;
+  background-color: #8b0a03;
+  border-color: #8b0a03;
   color: white;
 }
 
@@ -3672,7 +3672,7 @@ button.usa-combo-box__clear-input:focus {
   color: #f9f9f9;
 }
 .usa-date-picker__calendar__date--selected:not([disabled]):active, .usa-date-picker__calendar__date--range-date:not([disabled]):active {
-  background-color: #1a4480;
+  background-color: #8b0a03;
 }
 .usa-date-picker__calendar__date--range-date-start {
   border-top-left-radius: 10%;
@@ -3741,7 +3741,7 @@ button.usa-combo-box__clear-input:focus {
   color: #f9f9f9;
 }
 .usa-date-picker__calendar__month--selected:not([disabled]):active {
-  background-color: #1a4480;
+  background-color: #8b0a03;
 }
 
 .usa-date-picker__calendar__year-picker {
@@ -3792,7 +3792,7 @@ button.usa-combo-box__clear-input:focus {
   color: #f9f9f9;
 }
 .usa-date-picker__calendar__year--selected:not([disabled]):active {
-  background-color: #1a4480;
+  background-color: #8b0a03;
 }
 
 /* stylelint-enable selector-class-pattern */
@@ -3891,7 +3891,7 @@ button.usa-combo-box__clear-input:focus {
   margin-left: -1px;
 }
 .usa-button-group--segmented .usa-button-group__item:not(:last-child) .usa-button::before {
-  border-right: 1px solid #1a4480;
+  border-right: 1px solid #8b0a03;
   bottom: 0;
   content: "";
   display: block;
@@ -3923,7 +3923,7 @@ button.usa-combo-box__clear-input:focus {
   font-size: 1.06rem;
   line-height: 0.9;
   color: white;
-  background-color: #005ea2;
+  background-color: #8b0a03;
   appearance: none;
   border: 0;
   border-radius: 0.25rem;
@@ -3946,7 +3946,7 @@ button.usa-combo-box__clear-input:focus {
 }
 .usa-button:hover, .usa-button.usa-button--hover {
   color: white;
-  background-color: #1a4480;
+  background-color: #8b0a03;
   border-bottom: 0;
   text-decoration: none;
 }
@@ -4014,7 +4014,7 @@ button.usa-combo-box__clear-input:focus {
 .usa-button--outline:hover, .usa-button--outline.usa-button--hover {
   background-color: transparent;
   box-shadow: inset 0 0 0 2px #B11116;
-  color: #1a4480;
+  color: #8b0a03;
 }
 .usa-button--outline:active, .usa-button--outline.usa-button--active {
   background-color: transparent;
@@ -4040,7 +4040,7 @@ button.usa-combo-box__clear-input:focus {
 .usa-button--outline.usa-button--inverse.usa-button--unstyled {
   -moz-osx-font-smoothing: inherit;
   -webkit-font-smoothing: inherit;
-  color: #005ea2;
+  color: #8b0a03;
   text-decoration: underline;
   background-color: transparent;
   border: 0;
@@ -4056,7 +4056,7 @@ button.usa-combo-box__clear-input:focus {
   color: #54278f;
 }
 .usa-button--outline.usa-button--inverse.usa-button--unstyled:hover {
-  color: #1a4480;
+  color: #8b0a03;
 }
 .usa-button--outline.usa-button--inverse.usa-button--unstyled:active {
   color: #8b0a03;
@@ -4076,7 +4076,7 @@ button.usa-combo-box__clear-input:focus {
   color: #c9c9c9;
 }
 .usa-button--outline.usa-button--inverse.usa-button--unstyled.usa-button--hover {
-  color: #1a4480;
+  color: #8b0a03;
 }
 .usa-button--outline.usa-button--inverse.usa-button--unstyled.usa-button--active {
   color: #8b0a03;
@@ -4186,7 +4186,7 @@ button.usa-combo-box__clear-input:focus {
 .usa-button--unstyled {
   -moz-osx-font-smoothing: inherit;
   -webkit-font-smoothing: inherit;
-  color: #005ea2;
+  color: #8b0a03;
   text-decoration: underline;
   background-color: transparent;
   border: 0;

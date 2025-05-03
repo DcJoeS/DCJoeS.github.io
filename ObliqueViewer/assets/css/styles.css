@@ -3066,7 +3066,7 @@ abbr[title=required] {
   color: #1a4480;
 }
 .usa-file-input__choose:active {
-  color: #162e51;
+  color: #8b0a03;
 }
 .usa-file-input__choose:focus {
   outline: 0.25rem solid #2491ff;
@@ -3472,7 +3472,7 @@ button.usa-combo-box__clear-input:focus {
   padding: 0.5rem;
 }
 .usa-combo-box__list-option--focused {
-  outline: 2px solid #162e51;
+  outline: 2px solid #8b0a03;
   outline-offset: -2px;
   position: relative;
   z-index: 100;
@@ -3647,7 +3647,7 @@ button.usa-combo-box__clear-input:focus {
   padding: 10px 0px;
 }
 .usa-date-picker__calendar__date--focused {
-  outline: 2px solid #162e51;
+  outline: 2px solid #8b0a03;
   outline-offset: -2px;
   position: relative;
   z-index: 100;
@@ -3719,7 +3719,7 @@ button.usa-combo-box__clear-input:focus {
   padding: 10px 0;
 }
 .usa-date-picker__calendar__month--focused {
-  outline: 2px solid #162e51;
+  outline: 2px solid #8b0a03;
   outline-offset: -2px;
   position: relative;
   z-index: 100;
@@ -3770,7 +3770,7 @@ button.usa-combo-box__clear-input:focus {
   padding: 10px 0;
 }
 .usa-date-picker__calendar__year--focused {
-  outline: 2px solid #162e51;
+  outline: 2px solid #8b0a03;
   outline-offset: -2px;
   position: relative;
   z-index: 100;
@@ -4019,7 +4019,7 @@ button.usa-combo-box__clear-input:focus {
 .usa-button--outline:active, .usa-button--outline.usa-button--active {
   background-color: transparent;
   box-shadow: inset 0 0 0 2px #8b0a03;
-  color: #162e51;
+  color: #8b0a03;
 }
 .usa-button--outline.usa-button--inverse {
   box-shadow: inset 0 0 0 2px #dfe1e2;
@@ -4059,7 +4059,7 @@ button.usa-combo-box__clear-input:focus {
   color: #1a4480;
 }
 .usa-button--outline.usa-button--inverse.usa-button--unstyled:active {
-  color: #162e51;
+  color: #8b0a03;
 }
 .usa-button--outline.usa-button--inverse.usa-button--unstyled:focus {
   outline: 0.25rem solid #2491ff;
@@ -4079,7 +4079,7 @@ button.usa-combo-box__clear-input:focus {
   color: #1a4480;
 }
 .usa-button--outline.usa-button--inverse.usa-button--unstyled.usa-button--active {
-  color: #162e51;
+  color: #8b0a03;
 }
 .usa-button--outline.usa-button--inverse.usa-button--unstyled:visited {
   color: #dfe1e2;

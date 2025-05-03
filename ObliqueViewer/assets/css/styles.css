@@ -2864,7 +2864,7 @@ abbr[title=required] {
 }
 .usa-checkbox__input:focus + [class*=__label]::before,
 .usa-radio__input:focus + [class*=__label]::before {
-  outline: 0.25rem solid #2491ff;
+  outline: 0.25rem solid #B11116;
   outline-offset: 0.25rem;
 }
 .usa-checkbox__input:disabled + [class*=__label]::before,
@@ -3069,7 +3069,7 @@ abbr[title=required] {
   color: #8b0a03;
 }
 .usa-file-input__choose:focus {
-  outline: 0.25rem solid #2491ff;
+  outline: 0.25rem solid #B11116;
   outline-offset: 0;
 }
 
@@ -3235,15 +3235,15 @@ abbr[title=required] {
 }
 .usa-range:focus::-webkit-slider-thumb {
   background-color: white;
-  box-shadow: 0 0 0 2px #2491ff;
+  box-shadow: 0 0 0 2px #B11116;
 }
 .usa-range:focus::-moz-range-thumb {
   background-color: white;
-  box-shadow: 0 0 0 2px #2491ff;
+  box-shadow: 0 0 0 2px #B11116;
 }
 .usa-range:focus::-ms-thumb {
   background-color: white;
-  box-shadow: 0 0 0 2px #2491ff;
+  box-shadow: 0 0 0 2px #B11116;
 }
 .usa-range::-webkit-slider-runnable-track {
   background-color: #f0f0f0;
@@ -3326,7 +3326,7 @@ abbr[title=required] {
   padding: 0;
 }
 .usa-input-group.is-focused {
-  outline: 0.25rem solid #2491ff;
+  outline: 0.25rem solid #B11116;
   outline-offset: 0;
 }
 .usa-input-group--error {

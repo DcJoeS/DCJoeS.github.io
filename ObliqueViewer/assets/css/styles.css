@@ -3656,19 +3656,19 @@ button.usa-combo-box__clear-input:focus {
   color: #5d5d52;
 }
 .usa-date-picker__calendar__date--selected, .usa-date-picker__calendar__date--range-date {
-  background-color: #0050d8;
+  background-color: #B11116;
   color: #f9f9f9;
 }
 .usa-date-picker__calendar__date--selected:not([disabled]), .usa-date-picker__calendar__date--range-date:not([disabled]) {
-  background-color: #0050d8;
+  background-color: #B11116;
   color: #f9f9f9;
 }
 .usa-date-picker__calendar__date--selected:not([disabled]):hover, .usa-date-picker__calendar__date--range-date:not([disabled]):hover {
-  background-color: #0050d8;
+  background-color: #B11116;
   color: #e6e6e6;
 }
 .usa-date-picker__calendar__date--selected:not([disabled]):focus, .usa-date-picker__calendar__date--range-date:not([disabled]):focus {
-  background-color: #0050d8;
+  background-color: #B11116;
   color: #f9f9f9;
 }
 .usa-date-picker__calendar__date--selected:not([disabled]):active, .usa-date-picker__calendar__date--range-date:not([disabled]):active {
@@ -3725,19 +3725,19 @@ button.usa-combo-box__clear-input:focus {
   z-index: 100;
 }
 .usa-date-picker__calendar__month--selected {
-  background-color: #0050d8;
+  background-color: #B11116;
   color: #f9f9f9;
 }
 .usa-date-picker__calendar__month--selected:not([disabled]) {
-  background-color: #0050d8;
+  background-color: #B11116;
   color: #f9f9f9;
 }
 .usa-date-picker__calendar__month--selected:not([disabled]):hover {
-  background-color: #0050d8;
+  background-color: #B11116;
   color: #e6e6e6;
 }
 .usa-date-picker__calendar__month--selected:not([disabled]):focus {
-  background-color: #0050d8;
+  background-color: #B11116;
   color: #f9f9f9;
 }
 .usa-date-picker__calendar__month--selected:not([disabled]):active {
@@ -3776,19 +3776,19 @@ button.usa-combo-box__clear-input:focus {
   z-index: 100;
 }
 .usa-date-picker__calendar__year--selected {
-  background-color: #0050d8;
+  background-color: #B11116;
   color: #f9f9f9;
 }
 .usa-date-picker__calendar__year--selected:not([disabled]) {
-  background-color: #0050d8;
+  background-color: #B11116;
   color: #f9f9f9;
 }
 .usa-date-picker__calendar__year--selected:not([disabled]):hover {
-  background-color: #0050d8;
+  background-color: #B11116;
   color: #e6e6e6;
 }
 .usa-date-picker__calendar__year--selected:not([disabled]):focus {
-  background-color: #0050d8;
+  background-color: #B11116;
   color: #f9f9f9;
 }
 .usa-date-picker__calendar__year--selected:not([disabled]):active {
@@ -3906,7 +3906,7 @@ button.usa-combo-box__clear-input:focus {
   border-right-color: #b50909;
 }
 .usa-button-group--segmented .usa-button-group__item:not(:last-child) .usa-button--accent-cool::before {
-  border-right-color: #28a0cb;
+  border-right-color: #B11116;
 }
 .usa-button-group--segmented .usa-button-group__item:not(:last-child) .usa-button--base::before {
   border-right-color: #565c65;
@@ -3971,15 +3971,15 @@ button.usa-combo-box__clear-input:focus {
 
 .usa-button--accent-cool {
   color: #1b1b1b;
-  background-color: #00bde3;
+  background-color: #B11116;
 }
 .usa-button--accent-cool:visited {
   color: #1b1b1b;
-  background-color: #00bde3;
+  background-color: #B11116;
 }
 .usa-button--accent-cool:hover, .usa-button--accent-cool.usa-button--hover {
   color: #1b1b1b;
-  background-color: #28a0cb;
+  background-color: #B11116;
 }
 .usa-button--accent-cool:active, .usa-button--accent-cool.usa-button--active {
   color: white;

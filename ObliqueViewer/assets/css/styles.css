@@ -4053,7 +4053,7 @@ button.usa-combo-box__clear-input:focus {
   color: #dfe1e2;
 }
 .usa-button--outline.usa-button--inverse.usa-button--unstyled:visited {
-  color: #54278f;
+  color: #8b0a03;
 }
 .usa-button--outline.usa-button--inverse.usa-button--unstyled:hover {
   color: #8b0a03;
@@ -4198,13 +4198,13 @@ button.usa-combo-box__clear-input:focus {
   text-align: left;
 }
 .usa-button--unstyled:visited {
-  color: #54278f;
+  color: #B11116;
 }
 .usa-button--unstyled:hover {
   color: #B11116;
 }
 .usa-button--unstyled:active {
-  color: #850d12;
+  color: #B11116;
 }
 .usa-button--unstyled:focus {
   outline: 0.25rem solid #B11116;

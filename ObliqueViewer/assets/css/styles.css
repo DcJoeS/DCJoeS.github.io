@@ -3952,7 +3952,7 @@ button.usa-combo-box__clear-input:focus {
 }
 .usa-button:active, .usa-button.usa-button--active {
   color: white;
-  background-color: #162e51;
+  background-color: #B11116;
 }
 .usa-button:not([disabled]):focus, .usa-button:not([disabled]).usa-focus {
   outline-offset: 0.25rem;
@@ -3983,7 +3983,7 @@ button.usa-combo-box__clear-input:focus {
 }
 .usa-button--accent-cool:active, .usa-button--accent-cool.usa-button--active {
   color: white;
-  background-color: #07648d;
+  background-color: #B11116;
 }
 
 .usa-button--accent-warm {

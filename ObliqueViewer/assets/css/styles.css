@@ -2548,42 +2548,42 @@ template {
   font-style: normal;
   font-weight: 300;
   font-display: fallback;
-  src: url(../fonts/source-sans-pro/sourcesanspro-light-webfont.woff2) format("woff2"), url(../fonts/source-sans-pro/sourcesanspro-light-webfont.woff) format("woff"), url(../fonts/source-sans-pro/sourcesanspro-light-webfont.ttf) format("truetype");
+  src: url(../fonts/sourcesanspro-light-webfont.woff2) format("woff2"), url(../fonts/sourcesanspro-light-webfont.woff) format("woff"), url(../fonts/sourcesanspro-light-webfont.ttf) format("truetype");
 }
 @font-face {
   font-family: "Source Sans Pro Web";
   font-style: normal;
   font-weight: 400;
   font-display: fallback;
-  src: url(../fonts/source-sans-pro/sourcesanspro-regular-webfont.woff2) format("woff2"), url(../fonts/source-sans-pro/sourcesanspro-regular-webfont.woff) format("woff"), url(../fonts/source-sans-pro/sourcesanspro-regular-webfont.ttf) format("truetype");
+  src: url(../fonts/sourcesanspro-regular-webfont.woff2) format("woff2"), url(../fonts/sourcesanspro-regular-webfont.woff) format("woff"), url(../fonts/sourcesanspro-regular-webfont.ttf) format("truetype");
 }
 @font-face {
   font-family: "Source Sans Pro Web";
   font-style: normal;
   font-weight: 700;
   font-display: fallback;
-  src: url(../fonts/source-sans-pro/sourcesanspro-bold-webfont.woff2) format("woff2"), url(../fonts/source-sans-pro/sourcesanspro-bold-webfont.woff) format("woff"), url(../fonts/source-sans-pro/sourcesanspro-bold-webfont.ttf) format("truetype");
+  src: url(../fonts/sourcesanspro-bold-webfont.woff2) format("woff2"), url(../fonts/sourcesanspro-bold-webfont.woff) format("woff"), url(../fonts/sourcesanspro-bold-webfont.ttf) format("truetype");
 }
 @font-face {
   font-family: "Source Sans Pro Web";
   font-style: italic;
   font-weight: 300;
   font-display: fallback;
-  src: url(../fonts/source-sans-pro/sourcesanspro-lightitalic-webfont.woff2) format("woff2"), url(../fonts/source-sans-pro/sourcesanspro-lightitalic-webfont.woff) format("woff"), url(../fonts/source-sans-pro/sourcesanspro-lightitalic-webfont.ttf) format("truetype");
+  src: url(../fonts/sourcesanspro-lightitalic-webfont.woff2) format("woff2"), url(../fonts/sourcesanspro-lightitalic-webfont.woff) format("woff"), url(../fonts/sourcesanspro-lightitalic-webfont.ttf) format("truetype");
 }
 @font-face {
   font-family: "Source Sans Pro Web";
   font-style: italic;
   font-weight: 400;
   font-display: fallback;
-  src: url(../fonts/source-sans-pro/sourcesanspro-italic-webfont.woff2) format("woff2"), url(../fonts/source-sans-pro/sourcesanspro-italic-webfont.woff) format("woff"), url(../fonts/source-sans-pro/sourcesanspro-italic-webfont.ttf) format("truetype");
+  src: url(../fonts/sourcesanspro-italic-webfont.woff2) format("woff2"), url(../fonts/sourcesanspro-italic-webfont.woff) format("woff"), url(../fonts/sourcesanspro-italic-webfont.ttf) format("truetype");
 }
 @font-face {
   font-family: "Source Sans Pro Web";
   font-style: italic;
   font-weight: 700;
   font-display: fallback;
-  src: url(../fonts/source-sans-pro/sourcesanspro-bolditalic-webfont.woff2) format("woff2"), url(../fonts/source-sans-pro/sourcesanspro-bolditalic-webfont.woff) format("woff"), url(../fonts/source-sans-pro/sourcesanspro-bolditalic-webfont.ttf) format("truetype");
+  src: url(../fonts/sourcesanspro-bolditalic-webfont.woff2) format("woff2"), url(../fonts/sourcesanspro-bolditalic-webfont.woff) format("woff"), url(../fonts/sourcesanspro-bolditalic-webfont.ttf) format("truetype");
 }
 @font-face {
   font-family: "Merriweather Web";

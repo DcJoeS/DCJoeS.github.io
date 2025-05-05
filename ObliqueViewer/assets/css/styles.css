@@ -2632,7 +2632,7 @@ input:not([disabled]):focus,
 select:not([disabled]):focus,
 textarea:not([disabled]):focus,
 button:not([disabled]):focus {
-  outline: 0.25rem solid #2491ff;
+  outline: 0.25rem solid #B11116;
   outline-offset: 0;
 }
 
@@ -2640,12 +2640,12 @@ iframe:focus,
 [href]:focus,
 [tabindex]:focus,
 [contentEditable=true]:focus {
-  outline: 0.25rem solid #2491ff;
+  outline: 0.25rem solid #B11116;
   outline-offset: 0;
 }
 
 .usa-focus {
-  outline: 0.25rem solid #2491ff;
+  outline: 0.25rem solid #B11116;
   outline-offset: 0;
 }
 

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Blind-Critique Council Chamber</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            /* WCAG AA Compliant High Contrast Palette */
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #cbd5e1;
+            --accent-color: #38bdf8;
+            --accent-focus: #0ea5e9;
+            --border-color: #475569;
+            --error-color: #f87171;
+            
+            /* Persona Accessible Theme Accents */
+            --cls-skeptic: #fda4af;
+            --cls-innovator: #d8b4fe;
+            --cls-pragmatist: #fef08a;
+            --cls-expert: #6ee7b7;
+            --cls-advocate: #fbcfe8;
+        }
+
+        /* Global Layout Options & Reset */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 1rem;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Keyboard Focus Indicators for Section 508 / ADA compliance */
+        input:focus-visible, textarea:focus-visible, button:focus-visible {
+            outline: 3px solid var(--accent-color);
+            outline-offset: 2px;
+        }
+
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            width: 100%; 
+        }
+        
+        header { 
+            text-align: center; 
+            margin-bottom: 2rem; 
+            border-bottom: 2px solid var(--border-color); 
+            padding-bottom: 1.5rem; 
+        }
+        
+        h1 { 
+            margin: 0 0 0.5rem 0; 
+            color: var(--accent-color); 
+            font-size: 2rem; 
+        }
+        
+        .form-group { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 0.5rem; 
+            margin-bottom: 1.5rem; 
+        }
+        
+        label { 
+            font-weight: 600; 
+        }
+        
+        .config-panel { 
+            background-color: var(--card-bg); 
+            padding: 1.25rem; 
+            border-radius: 8px; 
+            margin-bottom: 2rem; 
+            border: 1px solid var(--border-color); 
+        }
+        
+        input[type="password"], textarea { 
+            background-color: #020617; 
+            color: var(--text-color); 
+            border: 1px solid var(--border-color); 
+            padding: 0.75rem; 
+            border-radius: 6px; 
+            font-size: 1rem; 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+        
+        textarea { 
+            height: 120px; 
+            resize: vertical; 
+        }
+        
+        button { 
+            background-color: var(--accent-color); 
+            color: #020617; 
+            border: none; 
+            padding: 0.85rem 2rem; 
+            border-radius: 6px; 
+            font-weight: 700; 
+            font-size: 1rem; 
+            cursor: pointer; 
+            width: 100%; 
+            transition: background-color 0.2s;
+        }
+        
+        button:hover { background-color: var(--accent-focus); }
+        button:disabled { background-color: #64748b; color: #cbd5e1; cursor: not-allowed; }
+
+        .status { 
+            background-color: #1e1b4b; 
+            border: 1px dashed var(--accent-color); 
+            padding: 1rem; 
+            border-radius: 6px; 
+            text-align: center; 
+            font-weight: 600; 
+            margin: 1.5rem 0; 
+        }
+
+        /* Mobile First Column Presentation */
+        .council-grid { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 1.5rem; 
+            margin-bottom: 2.5rem; 
+        }
+        
+        .panel-member { 
+            background-color: var(--card-bg); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            padding: 1.25rem; 
+            height: auto; 
+        }
+        
+        .panel-member h3 { 
+            margin-top: 0; 
+            border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 0.5rem; 
+            font-size: 1.2rem; 
+        }
+
+        .skeptic h3 { color: var(--cls-skeptic); }
+        .innovator h3 { color: var(--cls-innovator); }
+        .pragmatist h3 { color: var(--cls-pragmatist); }
+        .expert h3 { color: var(--cls-expert); }
+        .advocate h3 { color: var(--cls-advocate); }
+
+        /* Review Content Styling */
+        .critique-section { 
+            margin-top: 1.25rem; 
+            border-top: 2px dashed var(--border-color); 
+            padding-top: 1rem; 
+            background-color: rgba(0, 0, 0, 0.2); 
+            padding: 12px; 
+            border-radius: 6px; 
+        }
+        
+        .critique-title { 
+            font-weight: 800; 
+            font-size: 0.85rem; 
+            color: var(--accent-color); 
+            text-transform: uppercase; 
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .content p, .initial-idea p, .critique-content p { margin: 0 0 1rem 0; }
+        .content ul, .initial-idea ul, .critique-content ul { padding-left: 1.25rem; margin: 0 0 1rem 0; }
+        .content code, .initial-idea code, .critique-content code { background-color: #020617; padding: 2px 4px; border-radius: 4px; font-size: 0.9em; }
+
+        .verdict-box { 
+            background-color: #171717; 
+            border: 3px solid #4f46e5; 
+            border-radius: 8px; 
+            padding: 1.5rem; 
+            margin-top: 2.5rem; 
+        }
+        
+        .verdict-box h2 { margin-top: 0; color: #818cf8; font-size: 1.5rem; }
+        .hidden { display: none !important; }
+
+        /* Media Queries for Large Monitors and Tablet Viewports */
+        @media (min-width: 640px) { 
+            button { width: auto; } 
+        }
+        
+        @media (min-width: 1024px) {
+            .council-grid { 
+                display: grid; 
+                grid-template-columns: repeat(5, 1fr); 
+                gap: 1rem; 
+            }
+            .panel-member { 
+                max-height: 700px; 
+                overflow-y: auto; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+<main class="container">
+    <header role="banner">
+        <h1>The Peer-Review Council Chamber</h1>
+        <p style="color: var(--text-muted);">Anonymized multi-agent debate and synthesis engine pipeline via Gemini 2.5 Flash.</p>
+    </header>
+
+    <section class="config-panel" aria-label="API Credentials Setup Workspace">
+        <div class="form-group">
+            <label for="apiKey">Gemini API Key:</label>
+            <input type="password" id="apiKey" placeholder="AIzaSy..." autocomplete="off" aria-describedby="keyHelp">
+            <span id="keyHelp" style="font-size: 0.85rem; color: var(--text-muted);">Handled safely client-side within local browser environment variables. Never logged or exposed.</span>
+        </div>
+    </section>
+
+    <section style="background-color: var(--card-bg); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);" aria-label="Input Configuration Form">
+        <div class="form-group">
+            <label for="userPrompt">System Architecture Challenge Statement or Core Alternative Dilemma:</label>
+            <textarea id="userPrompt" placeholder="Describe the strategic technical challenge context here..."></textarea>
+        </div>
+        <button id="summonBtn" onclick="conveneCouncil()">Initialize Debating Council</button>
+    </section>
+
+    <div id="statusUpdate" class="status hidden" role="status" aria-live="polite" aria-busy="false"></div>
+
+    <section aria-label="Active Council Deliberations Output Panels">
+        <h2 style="margin-top: 2.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; font-size: 1.5rem;">Sub-Panel Strategic Debates</h2>
+        <div class="council-grid">
+            <article class="panel-member skeptic" id="mem-skeptic">
+                <h3>🛡️ Member 1 (Skeptic)</h3>
+                <div class="initial-idea"><p><em>Awaiting context submission...</em></p></div>
+                <div class="critique-section hidden" id="critique-skeptic">
+                    <div class="critique-title">Anonymous Peer Critique Output</div>
+                    <div class="critique-content"></div>
+                </div>
+            </article>
+            <article class="panel-member innovator" id="mem-innovator">
+                <h3>🚀 Member 2 (Innovator)</h3>
+                <div class="initial-idea"><p><em>Awaiting context submission...</em></p></div>
+                <div class="critique-section hidden" id="critique-innovator">
+                    <div class="critique-title">Anonymous Peer Critique Output</div>
+                    <div class="critique-content"></div>
+                </div>
+            </article>
+            <article class="panel-member pragmatist" id="mem-pragmatist">
+                <h3>🔧 Member 3 (Pragmatist)</h3>
+                <div class="initial-idea"><p><em>Awaiting context submission...</em></p></div>
+                <div class="critique-section hidden" id="critique-pragmatist">
+                    <div class="critique-title">Anonymous Peer Critique Output</div>
+                    <div class="critique-content"></div>
+                </div>
+            </article>
+            <article class="panel-member expert" id="mem-expert">
+                <h3>🧠 Member 4 (Architect)</h3>
+                <div class="initial-idea"><p><em>Awaiting context submission...</em></p></div>
+                <div class="critique-section hidden" id="critique-expert">
+                    <div class="critique-title">Anonymous Peer Critique Output</div>
+                    <div class="critique-content"></div>
+                </div>
+            </article>
+            <article class="panel-member advocate" id="mem-advocate">
+                <h3>👥 Member 5 (Advocate)</h3>
+                <div class="initial-idea"><p><em>Awaiting context submission...</em></p></div>
+                <div class="critique-section hidden" id="critique-advocate">
+                    <div class="critique-title">Anonymous Peer Critique Output</div>
+                    <div class="critique-content"></div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section id="verdictContainer" class="verdict-box hidden" aria-live="assertive">
+        <h2>⚖️ Chairman's Consolidated Matrix Analysis</h2>
+        <div id="verdictContent">Processing multi-agent pipeline logs...</div>
+    </section>
+</main>
+
+<script type="module">
+    import { GoogleGenAI } from 'https://esm.run/@google/genai';
+
+    const personas = {
+        skeptic: "Act as a ruthless Red Team Architect. Pinpoint the vulnerabilities, operational lock-in risks, and hidden structural flaws in the user's setup.",
+        innovator: "Act as a Technology Evangelist. Focus on rapid scalability, modular design advantages, and future expansion paths.",
+        pragmatist: "Act as a Project Manager and Cost Controller. Focus on timelines, baseline implementation complexity, and resource footprint overhead.",
+        expert: "Act as a conservative Systems Engineer. Evaluate requirements against standard decoupling practices, data hygiene, and system maintainability rules.",
+        advocate: "Act as a Work Environment Advocate. Focus on the human impact—the operational burden on engineers maintaining this platform daily."
+    };
+
+    // Resilient call handler running exponential backoff retries on transient errors
+    async function callWithRetry(ai, model, payload, maxRetries = 3, delayMs = 1500) {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                return await ai.models.generateContent({
+                    model: model,
+                    contents: payload.contents,
+                    config: payload.config
+                });
+            } catch (err) {
+                const errMsg = err.message || "";
+                const isTransient = errMsg.includes('503') || errMsg.includes('429') || errMsg.includes('UNAVAILABLE');
+                
+                if (isTransient && attempt < maxRetries) {
+                    // Backoff timing multiplication step
+                    await new Promise(res => setTimeout(res, delayMs * attempt));
+                    continue;
+                }
+                throw err;
+            }
+        }
+    }
+
+    window.conveneCouncil = async function() {
+        const apiKey = document.getElementById('apiKey').value.trim();
+        const promptText = document.getElementById('userPrompt').value.trim();
+        const statusBox = document.getElementById('statusUpdate');
+        const verdictContainer = document.getElementById('verdictContainer');
+        const button = document.getElementById('summonBtn');
+
+        if (!apiKey || !promptText) return alert("Please fulfill both the prompt requirement and API Key strings.");
+
+        button.disabled = true;
+        statusBox.setAttribute('aria-busy', 'true');
+        statusBox.classList.remove('hidden');
+        verdictContainer.classList.add('hidden');
+        
+        // Clear previous state records
+        Object.keys(personas).forEach(key => {
+            document.querySelector(`#mem-${key} .initial-idea`).innerHTML = "<p><em>Drafting baseline appraisal...</em></p>";
+            document.getElementById(`critique-${key}`).classList.add('hidden');
+        });
+
+        try {
+            const ai = new GoogleGenAI({ apiKey: apiKey });
+            const targetedModel = 'gemini-2.5-flash';
+
+            // --- STAGE 1: SEQUENTIAL BASELINE PRODUCTION ---
+            statusBox.innerText = "Stage 1: Gathering standalone alternative analysis reports (Queued sequence)...";
+            
+            const rawIdeas = [];
+            const personaEntries = Object.entries(personas);
+            
+            // Step loop execution eliminates simultaneous server blasting issues
+            for (const [key, instruction] of personaEntries) {
+                try {
+                    const res = await callWithRetry(ai, targetedModel, {
+                        contents: promptText,
+                        config: { systemInstruction: instruction, temperature: 0.7 }
+                    });
+                    const markdown = res.text || "[No Content Generated]";
+                    document.querySelector(`#mem-${key} .initial-idea`).innerHTML = marked.parse(markdown);
+                    rawIdeas.push({ key, text: markdown });
+                } catch (err) {
+                    document.querySelector(`#mem-${key} .initial-idea`).innerHTML = `<p style="color:var(--error-color);"><strong>Error:</strong> ${err.message}</p>`;
+                    rawIdeas.push({ key, text: `[Error generating perspective: ${err.message}]` });
+                }
+                // Short wait context window breather between requests
+                await new Promise(res => setTimeout(res, 250));
+            }
+
+            // --- STAGE 2: SEQUENTIAL BLIND PEER-CRITIQUE MATRIX ---
+            statusBox.innerText = "Stage 2: Processing blind peer cross-examinations via sequence pipeline...";
+            
+            const completeDebateMatrix = [];
+            
+            for (const targetMember of rawIdeas) {
+                // Compile alternative files removing the target's identity trace context
+                const peerSubmissionsBlock = rawIdeas
+                    .filter(m => m.key !== targetMember.key)
+                    .map((m, idx) => `### ANONYMOUS PEER PROPOSAL ${idx + 1}:\n${m.text}`)
+                    .join("\n\n");
+
+                const critiqueDirective = `You are a member of an architecture committee. You wrote an internal proposal regarding the following issue: "${promptText}". Below are alternative proposals written anonymously by other members of the committee. Critique these alternatives objectively. Point out hidden structural flaws or baseline calculation errors. Do not refer to yourself by name.`;
+
+                try {
+                    const critiqueResponse = await callWithRetry(ai, targetedModel, {
+                        contents: `Here are your peers' alternative systems for review:\n\n${peerSubmissionsBlock}`,
+                        config: { systemInstruction: critiqueDirective, temperature: 0.6 }
+                    });
+
+                    const critiqueMarkdown = critiqueResponse.text || "[No Peer Evaluation Tracked]";
+                    
+                    const critiqueBox = document.getElementById(`critique-${targetMember.key}`);
+                    critiqueBox.classList.remove('hidden');
+                    critiqueBox.querySelector('.critique-content').innerHTML = marked.parse(critiqueMarkdown);
+
+                    completeDebateMatrix.push({ key: targetMember.key, original: targetMember.text, critique: critiqueMarkdown });
+                } catch (err) {
+                    const critiqueBox = document.getElementById(`critique-${targetMember.key}`);
+                    critiqueBox.classList.remove('hidden');
+                    critiqueBox.querySelector('.critique-content').innerHTML = `<p style="color:var(--error-color);">Critique entry omitted due to temporary server rate limitation context blocks.</p>`;
+                    completeDebateMatrix.push({ key: targetMember.key, original: targetMember.text, critique: `[Critique omitted: ${err.message}]` });
+                }
+                await new Promise(res => setTimeout(res, 250));
+            }
+
+            // --- STAGE 3: CHAIRMAN CONSOLIDATED ROADMAP MATRIX ---
+            statusBox.innerText = "Stage 3: Funneling argument ledgers to Council Chair for final synthesis...";
+            verdictContainer.classList.remove('hidden');
+            document.getElementById('verdictContent').innerHTML = "<p><em>The Chair is evaluating argument chains...</em></p>";
+
+            const masterDebateLog = completeDebateMatrix.map(m => {
+                return `===========================================\n### TESTIMONY COMPONENT: COMMITTEE MEMBER (${m.key.toUpperCase()})\n\n* ORIGINAL STRATEGY PROPOSAL:\n${m.original}\n\n* BLIND CRITIQUE OFFERED BY THIS MEMBER AGAINST PEERS:\n${m.critique}\n`;
+            }).join('\n');
+
+            const chairSystemInstruction = "You are the Executive Chairman of a high-level enterprise technology panel. You will be passed a core technical problem statement, followed by a raw ledger containing both the independent architectural assertions and the blind cross-critique testimonies of your committee members. Synthesize these inputs into a clean master roadmap with explicit structural header paths.";
+
+            const chairmanPayload = `CORE SYSTEM PROBLEM:\n"${promptText}"\n\nCOMPREHENSIVE COMMITTEE ARGUMENT LOGS:\n${masterDebateLog}`;
+
+            const finalConsolidation = await callWithRetry(ai, targetedModel, {
+                contents: chairmanPayload,
+                config: { systemInstruction: chairSystemInstruction, temperature: 0.3 }
+            });
+
+            document.getElementById('verdictContent').innerHTML = marked.parse(finalConsolidation.text || "Failed synthesis lifecycle.");
+
+        } catch (ex) {
+            alert("Error caught in execution loop pipeline context: " + ex.message);
+        } finally {
+            button.disabled = false;
+            statusBox.setAttribute('aria-busy', 'false');
+            statusBox.classList.add('hidden');
+        }
+    }
+</script>
+</body>
+</html>

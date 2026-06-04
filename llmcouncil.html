@@ -145,6 +145,14 @@
             font-size: 1.2rem; 
         }
 
+        /* Persona instruction styling shown beneath each persona title */
+        .persona-instruction {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+            line-height: 1.35;
+        }
+
         .skeptic h3 { color: var(--cls-skeptic); }
         .innovator h3 { color: var(--cls-innovator); }
         .pragmatist h3 { color: var(--cls-pragmatist); }
@@ -234,6 +242,7 @@
         <div class="council-grid">
             <article class="panel-member skeptic" id="mem-skeptic">
                 <h3>🛡️ Member 1 (Skeptic)</h3>
+                <div class="persona-instruction" aria-live="polite"></div>
                 <div class="initial-idea"><p><em>Awaiting context submission...</em></p></div>
                 <div class="critique-section hidden" id="critique-skeptic">
                     <div class="critique-title">Anonymous Peer Critique Output</div>
@@ -242,6 +251,7 @@
             </article>
             <article class="panel-member innovator" id="mem-innovator">
                 <h3>🚀 Member 2 (Innovator)</h3>
+                <div class="persona-instruction" aria-live="polite"></div>
                 <div class="initial-idea"><p><em>Awaiting context submission...</em></p></div>
                 <div class="critique-section hidden" id="critique-innovator">
                     <div class="critique-title">Anonymous Peer Critique Output</div>
@@ -250,6 +260,7 @@
             </article>
             <article class="panel-member pragmatist" id="mem-pragmatist">
                 <h3>🔧 Member 3 (Pragmatist)</h3>
+                <div class="persona-instruction" aria-live="polite"></div>
                 <div class="initial-idea"><p><em>Awaiting context submission...</em></p></div>
                 <div class="critique-section hidden" id="critique-pragmatist">
                     <div class="critique-title">Anonymous Peer Critique Output</div>
@@ -258,6 +269,7 @@
             </article>
             <article class="panel-member expert" id="mem-expert">
                 <h3>🧠 Member 4 (Architect)</h3>
+                <div class="persona-instruction" aria-live="polite"></div>
                 <div class="initial-idea"><p><em>Awaiting context submission...</em></p></div>
                 <div class="critique-section hidden" id="critique-expert">
                     <div class="critique-title">Anonymous Peer Critique Output</div>
@@ -266,6 +278,7 @@
             </article>
             <article class="panel-member advocate" id="mem-advocate">
                 <h3>👥 Member 5 (Advocate)</h3>
+                <div class="persona-instruction" aria-live="polite"></div>
                 <div class="initial-idea"><p><em>Awaiting context submission...</em></p></div>
                 <div class="critique-section hidden" id="critique-advocate">
                     <div class="critique-title">Anonymous Peer Critique Output</div>
@@ -291,6 +304,21 @@
         expert: "Act as a conservative Systems Engineer. Evaluate requirements against standard decoupling practices, data hygiene, and system maintainability rules.",
         advocate: "Act as a Work Environment Advocate. Focus on the human impact—the operational burden on engineers maintaining this platform daily."
     };
+
+    // Render each persona's short instructions beneath their tile title so users can see role intent
+    (function renderPersonaInstructions() {
+        try {
+            Object.entries(personas).forEach(([key, instruction]) => {
+                const container = document.querySelector(`#mem-${key} .persona-instruction`);
+                if (!container) return;
+                // Use marked to allow simple markdown formatting if present
+                container.innerHTML = marked.parse(instruction);
+            });
+        } catch (e) {
+            // Fail silently (non-critical), keep existing UI functional
+            console.error('Persona instruction rendering failed:', e);
+        }
+    })();
 
     // Resilient call handler running exponential backoff retries on transient errors
     async function callWithRetry(ai, model, payload, maxRetries = 3, delayMs = 1500) {

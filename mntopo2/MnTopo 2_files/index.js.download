@@ -1,0 +1,2755 @@
+// ESRI Leaflet Map Application for MN LiDAR Viewer
+// ESRI api key (this will need to be renewed by June 2026)
+const esriToken = 'AAPTasFixQzvmvEPKK2QSttNrBw..qTncYpT36WK_eVNZ0fA_ZfcW9Fb266sYGigLgl-oGUsMqF4168Usl5BNl81KjAXu8adua_K5o0ycJZfr_0_NyXqW7caUKjbd_3tVxWbz9HqSGixPBFiKF8vdnlfzJkTb-SajpmfodNz97cMRFGsODny-B2bWIjRbjR08DPTrUxdtf_n-JpJ8o8ey85K-OL3DzHWq999VrkvQfBFU_992dwEakFZtoO_pIo5mrz_VNTu9-dKuqyqSlvOTM2I1QQ..AT2_eScakCXM';
+
+//kill requests
+let activeAbortController = null;
+let currentRequestId = 0;
+
+// Basemaps
+// OpenStreetMap
+const osm = L.tileLayer(osmUrl, {
+  attribution: '&copy; OpenStreetMap contributors'
+});
+// Satellite (Esri)
+const satellite = L.tileLayer(
+  satelliteUrl,
+  { attribution: 'Tiles © Esri' }
+);
+// Layers
+// Dynamic Layer Rendering (DRA) for DEM
+const renderingRule = {
+  "rasterFunction": "Stretch",
+  "rasterFunctionArguments": {
+    "StretchType": 5,
+    "DRA": true,
+    "UseGamma": true,
+    "Gamma": [1.25]
+  },
+  "variableName": "Raster"
+};
+
+// 1st Gen DEM ImageServer URL
+const demLayer1stGenImageServer = 'https://enterprise.gisdata.mn.gov/agsimg/rest/services/MnTopo/1st_Generation_DEM_Data/ImageServer';
+window.lastElevations2ndGen = null;
+window.lastElevations1stGen = null;
+
+// DEM image layer (Esri ImageServer)
+const demLayer = L.esri.imageMapLayer({
+  url: demLayerUrl,
+  renderingRule: renderingRule,
+  interpolation: 'RSP_BilinearInterpolation', 
+  format: 'jpgpng',
+  opacity: 0.65
+});
+
+//accessible colormap generation
+function generateColormap() {
+    const colors = [];
+
+    const stops = [
+        { value: 0, color: [8, 104, 172] },  // deep blue (lowest elevation)
+        {value: 64, color: [67,162,202]}, 
+        {value: 128, color: [123,204,196]}, 
+        {value: 192, color: [186,228,188]}, 
+        {value: 255, color: [240,249,232]}  // light teal (highest elevation)
+    ];
+
+    for (let i = 0; i <= 255; i++) {
+        // Find which two stops i falls between
+        let lower = stops[0], upper = stops[stops.length - 1];
+        for (let j = 0; j < stops.length - 1; j++) {
+            if (i >= stops[j].value && i <= stops[j + 1].value) {
+                lower = stops[j];
+                upper = stops[j + 1];
+                break;
+            }
+        }
+
+        // Interpolation factor
+        const t = (i - lower.value) / (upper.value - lower.value);
+
+        // Interpolate RGB
+        const r = Math.round(lower.color[0] + t * (upper.color[0] - lower.color[0]));
+        const g = Math.round(lower.color[1] + t * (upper.color[1] - lower.color[1]));
+        const b = Math.round(lower.color[2] + t * (upper.color[2] - lower.color[2]));
+
+        colors.push([i, r, g, b]);
+    }
+
+    return colors;
+}
+
+//rendering rule for accessible colormap
+const renderingRule2 = {
+  "rasterFunction": "Colormap",
+  "rasterFunctionArguments": {
+    "Colormap": generateColormap(),
+    "Raster": {
+      "rasterFunction": "Resample",
+      "rasterFunctionArguments": {
+        "ResamplingType": 1, // 1 = Bilinear
+        "InputCellsize": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "Raster": {
+          "rasterFunction": "Stretch",
+          "rasterFunctionArguments": {
+            "StretchType": 5,
+            "DRA": true,
+            "MinPercent": 1,
+            "MaxPercent": 1
+          }
+        }
+      }
+    }
+  }
+};
+
+// DEM image layer (Esri ImageServer) - colorized
+const demLayerColorized = L.esri.imageMapLayer({
+  url: demLayerUrl,
+  renderingRule: renderingRule2,
+  interpolation: 'RSP_BilinearInterpolation',
+  format: 'png32', 
+  opacity: 0.65
+})
+
+// Generate terrain colormap
+function generateAdvancedTerrainColormap() {
+    const colors = [];
+
+const stops = [
+    { value: 0,   color: [175, 240, 233] }, // AFF0E9
+    { value: 36,  color: [255, 255, 178] }, // FFFFB2
+    { value: 72,  color: [0, 128, 64] },   // 008040
+    { value: 108, color: [247, 200, 35] },  // F7C823
+    { value: 144, color: [128, 0, 0] },     // 800000
+    { value: 180, color: [122, 63, 18] },   // 7A3F12
+    { value: 216, color: [185, 185, 185] }, // B9B9B9
+    { value: 255, color: [253, 253, 254] }  // FDFDFE
+];
+    for (let i = 0; i <= 255; i++) {
+        // Find which two stops i falls between
+        let lower = stops[0], upper = stops[stops.length - 1];
+        for (let j = 0; j < stops.length - 1; j++) {
+            if (i >= stops[j].value && i <= stops[j + 1].value) {
+                lower = stops[j];
+                upper = stops[j + 1];
+                break;
+            }
+        }
+
+        // Interpolation factor
+        const t = (i - lower.value) / (upper.value - lower.value);
+
+        // Interpolate RGB
+        const r = Math.round(lower.color[0] + t * (upper.color[0] - lower.color[0]));
+        const g = Math.round(lower.color[1] + t * (upper.color[1] - lower.color[1]));
+        const b = Math.round(lower.color[2] + t * (upper.color[2] - lower.color[2]));
+
+        colors.push([i, r, g, b]);
+    }
+
+    return colors;
+}
+
+//rendering rule for terrain colormap
+const renderingRule4 = {
+  "rasterFunction": "Colormap",
+  "rasterFunctionArguments": {
+    "Colormap": generateAdvancedTerrainColormap(),
+    "Raster": {
+      "rasterFunction": "Resample",
+      "rasterFunctionArguments": {
+        "ResamplingType": 1, // 1 = Bilinear
+        "InputCellsize": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "Raster": {
+          "rasterFunction": "Stretch",
+          "rasterFunctionArguments": {
+            "StretchType": 5,
+            "DRA": true,
+            "MinPercent": 1,
+            "MaxPercent": 1
+          }
+        }
+      }
+    }
+  }
+};
+
+// DEM image layer (Esri ImageServer) - terrain colorized
+const demLayerTerrain = L.esri.imageMapLayer({
+  url: demLayerUrl,
+  renderingRule: renderingRule4,
+  interpolation: 'RSP_BilinearInterpolation',
+  format: 'png32', 
+  opacity: 0.65
+})
+
+// DEM image layer - hillshade rendering rule
+const renderingRule3 = {
+  "rasterFunction": "Hillshade",
+  "rasterFunctionArguments": {
+    "Azimuth": 315.0,
+    "Altitude": 45.0,
+    "ZFactor": 5.0,
+    "SlopeType": 2, // 1 = Degree, 2 = Percent
+    "PSPower": 1.0,
+    "PSZFactor": 5.0
+  },
+};
+
+// DEM image layer (Esri ImageServer) - hillshade
+const demLayerHillshade = L.esri.imageMapLayer({
+  url: demLayerUrl,
+  renderingRule: renderingRule3,
+  opacity: 1,
+  attribution: 'MN DNR',
+  pane: "hillshadePaneUp"
+});
+
+// 1st Gen Flight Lines Feature Layer
+const flightLines1stGen = L.esri.featureLayer({
+  url: flightLines1stGenUrl,
+  style: function () {
+    return {
+      color: '#5D295F',
+      weight: 2,
+      opacity: 0.8
+    };
+  }
+});
+// Add the Popup (Matches 2nd Gen Style)
+flightLines1stGen.bindPopup(function (layer) {
+  const props = layer.feature.properties;
+
+  // DATE FORMATTING
+  let dateString = 'No date';
+  if (props.date_flown) {
+    const dateObj = new Date(props.date_flown);
+    // This converts to YYYY-MM-DD format
+    dateString = dateObj.toISOString().split('T')[0]; 
+  }
+
+  return createFlightPopup({
+    name: props.project || 'Unnamed Project',
+    workUnit: null|| 'N/A',
+    formattedDate: dateString,
+    metadata: props.Metadata_Link || props.metadata || null
+  });
+});
+
+// Hover effects
+flightLines1stGen.on('mouseover', function (e) {
+  e.layer.setStyle({ weight: 3, color: '#FFC845', opacity: 1 });
+});
+flightLines1stGen.on('mouseout', function (e) {
+  flightLines1stGen.resetStyle(e.layer);
+});
+
+
+// Read URL Parameters on Page Load
+const urlParams = new URLSearchParams(window.location.search);
+const startLat = parseFloat(urlParams.get('lat')) || 46.5;
+const startLng = parseFloat(urlParams.get('lng')) || -94.0;
+const startZoom = parseInt(urlParams.get('z')) || 7;
+
+// Map init
+const map = L.map('map', {
+  center: [startLat, startLng],
+  zoom: startZoom,
+  maxZoom: 19,
+  layers: [osm]
+});
+
+// Function to update the URL with current Lat, Lng, and Zoom
+function updateURL() {
+  const center = map.getCenter();
+  const zoom = map.getZoom();
+  
+  // Create a new URL object based on the current location
+  const url = new URL(window.location);
+  
+  // Set the parameters (rounded to 5 decimals for cleanliness)
+  url.searchParams.set('lat', center.lat.toFixed(5));
+  url.searchParams.set('lng', center.lng.toFixed(5));
+  url.searchParams.set('z', zoom);
+  
+  // Update the address bar WITHOUT refreshing the page
+  // We use replaceState so we don't clog the user's "Back" button history
+  window.history.replaceState({}, '', url);
+}
+
+// Listen for map movements and zooms
+map.on('moveend zoomend', updateURL);
+
+// Custom Panes for Layer Order
+map.createPane("vectorPane");
+map.getPane("vectorPane").style.zIndex = 500;
+
+map.createPane("hillshadePaneDown");
+map.getPane("hillshadePaneDown").style.zIndex = 300;
+
+map.createPane("demPane");
+map.getPane("demPane").style.zIndex = 310;
+
+map.createPane("hillshadePaneUp");
+map.getPane("hillshadePaneUp").style.zIndex = 305; 
+
+map.createPane("contourPane");
+map.getPane("contourPane").style.zIndex = 510;
+
+map.createPane("pane50ft");
+map.getPane("pane50ft").style.zIndex = 520;
+
+map.createPane("pane10ft");
+map.getPane("pane10ft").style.zIndex = 530;
+
+map.createPane("pane2ft");
+map.getPane("pane2ft").style.zIndex = 540;
+
+map.createPane("femaPane");
+map.getPane("femaPane").style.zIndex = 500;
+
+demLayerTerrain.addTo(map);
+demLayerHillshade.addTo(map);
+
+const elevationLegend = L.control({ position: 'bottomright' });
+
+elevationLegend.onAdd = function () {
+    const div = L.DomUtil.create('div', 'leaflet-control fema-legend');
+    div.id = 'elevation-legend-box';
+    return div;
+};
+
+// Checks all DEM layers and builds a combined legend
+function refreshElevationLegend() {
+    const layers = [
+        { layer: demLayer, id: 'grayscale', name: '2nd Gen Grayscale (0.5m)' },
+        { layer: demLayerTerrain, id: 'terrain', name: '2nd Gen Terrain (0.5m)' },
+        { layer: demLayerColorized, id: 'accessible', name: '2nd Gen Accessible (0.5m)' },
+        { layer: demLayer1stGen, id: '1stgen', name: '1st Gen Color (1m)' }
+    ];
+
+    // Filter to only active layers
+    const activeRamps = layers.filter(item => map.hasLayer(item.layer));
+
+    // If none are active, remove the legend from the map
+    if (activeRamps.length === 0) {
+        elevationLegend.remove();
+        return;
+    }
+
+    // Ensure legend is on the map
+    if (!map.hasLayer(elevationLegend)) {
+        elevationLegend.addTo(map);
+    }
+
+    const container = elevationLegend.getContainer();
+    
+    // Build HTML for all active ramps
+    let html = `<div class="legend-title">Elevation</div>`;
+    
+    // Wrap the ramps in a flex container to show them side-by-side
+    html += `<div style="display: flex; gap: 15px; align-items: flex-end;">`;
+
+    activeRamps.forEach(ramp => {
+        html += `
+            <div>
+                <div style="font-size: 9px; font-weight: bold; color: #666; margin-bottom: 4px; text-align: center; max-width: 60px; line-height: 1;">${ramp.name}</div>
+                <div class="elevation-ramp-container">
+                    <div class="elevation-ramp-bar ramp-${ramp.id}"></div>
+                    <div class="elevation-ramp-labels">
+                        <span>High</span>
+                        <span>Low</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+// FEMA legend control
+const femaLegend = L.control({ position: 'bottomright' });
+
+// Helper function to update FEMA Legend HTML based on zoom
+function updateFemaLegendHTML(div) {
+  if (!div) return;
+  
+  const z = map.getZoom();
+  const MIN_FEMA_ZOOM = 12;
+
+  // If zoomed out too far
+  if (z < MIN_FEMA_ZOOM) {
+    div.innerHTML = `
+      <div class="fema-legend">
+        <div class="legend-title">FEMA Floodplains</div>
+        <div style="font-size:10px; color:#666; margin-top:5px;">Zoom in to view</div>
+      </div>`;
+    return;
+  }
+
+  // Standard legend if zoomed in
+  div.innerHTML = `
+    <div class="fema-legend">
+      <div class="legend-title">FEMA Floodplains</div>
+      <div class="legend-item">
+        <span class="legend-color" style="background:#FFEBBE;"></span>
+        <span class="legend-label">Unmodernized</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background:#CD9C9B;"></span>
+        <span class="legend-label">Modernized</span>
+      </div>
+    </div>
+  `;
+}
+
+femaLegend.onAdd = function () {
+  const div = L.DomUtil.create('div', 'leaflet-control'); // 'fema-legend' class is added inside the helper
+  updateFemaLegendHTML(div);
+  return div;
+};
+
+// Standard ray-casting algorithm for Point-in-Polygon
+function isPointInPoly(pt, latlngs) {
+    if (!latlngs) return false;
+    // Handle MultiPolygons (nested arrays)
+    if (Array.isArray(latlngs[0]) && ! (latlngs[0][0] instanceof L.LatLng) && typeof latlngs[0][0] !== 'object') {
+        return latlngs.some(subPoly => isPointInPoly(pt, subPoly));
+    }
+    // Standard Polygon check
+    let isInside = false;
+    const poly = latlngs.flat(Infinity); // Flatten Leaflet's potential nested arrays
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const xi = poly[i].lat, yi = poly[i].lng;
+        const xj = poly[j].lat, yj = poly[j].lng;
+        const intersect = ((yi > pt.lng) !== (yj > pt.lng)) &&
+            (pt.lat < (xj - xi) * (pt.lng - yi) / (yj - yi) + xi);
+        if (intersect) isInside = !isInside;
+    }
+    return isInside;
+}
+
+// This county layer used to query 1st gen lidar data
+const countyLabels = {}; 
+
+const lidarIndexLayer = L.esri.featureLayer({
+  url: lidarIndexUrl,
+  style: function () {
+    return { color: "#53565A", weight: 2, fillOpacity: 0 };
+  },
+  onEachFeature: function (feature, layer) {
+    const name = feature.properties.co_name;
+    if (!name) return;
+
+    const labelMarker = L.marker(layer.getBounds().getCenter(), {
+      icon: L.divIcon({ className: 'hidden-label-marker' }),
+      interactive: false,
+      opacity: 0 
+    });
+
+    labelMarker.bindTooltip(name, {
+      permanent: true,
+      direction: "center",
+      className: "county-label",
+      opacity: 0 
+    });
+
+    labelMarker.addTo(map);
+    
+    countyLabels[feature.id || name] = {
+      marker: labelMarker,
+      polygon: layer,
+      // Store the geometry coordinates once for faster checking
+      latlngs: layer.getLatLngs()
+    };
+  }
+});
+
+function updateLabelPositions() {
+  // SAFETY CHECK: If the county layer isn't on the map, stop immediately
+  if (!map.hasLayer(lidarIndexLayer)) return;
+  const zoom = map.getZoom();
+  let dynamicSize = 14 + (zoom - 7) * 2; // Start at 14px, grow by 2px for every zoom level past 7
+  dynamicSize = Math.max(12, Math.min(dynamicSize, 36)); // Clamp between 12px and 36px
+  document.getElementById('map').style.setProperty('--county-label-size', dynamicSize + 'px');
+
+  const mapBounds = map.getBounds();
+
+  for (let id in countyLabels) {
+    const item = countyLabels[id];
+    const polyBounds = item.polygon.getBounds();
+
+    // Calculate the intersection center
+    const visibleSouth = Math.max(mapBounds.getSouth(), polyBounds.getSouth());
+    const visibleWest = Math.max(mapBounds.getWest(), polyBounds.getWest());
+    const visibleNorth = Math.min(mapBounds.getNorth(), polyBounds.getNorth());
+    const visibleEast = Math.min(mapBounds.getEast(), polyBounds.getEast());
+
+    if (visibleSouth < visibleNorth && visibleWest < visibleEast) {
+      const visibleCenter = L.latLng(
+        (visibleSouth + visibleNorth) / 2,
+        (visibleWest + visibleEast) / 2
+      );
+
+      // Check if this point actually INSIDE the county?
+      if (isPointInPoly(visibleCenter, item.latlngs)) {
+          
+          // If the marker isn't on the map (because it was toggled off), put it back
+          if (!map.hasLayer(item.marker)) {
+              item.marker.addTo(map);
+          }
+          
+          item.marker.setLatLng(visibleCenter);
+          item.marker.setOpacity(1);
+          item.marker.getTooltip().setOpacity(0.9);
+      } else {
+          // If the visible center is in empty space, hide label
+          item.marker.setOpacity(0);
+          item.marker.getTooltip().setOpacity(0);
+      }
+    } else {
+      // Off screen
+      item.marker.setOpacity(0);
+      item.marker.getTooltip().setOpacity(0);
+    }
+  }
+}
+
+// When the county layer is REMOVED from the map (toggled off)
+lidarIndexLayer.on('remove', function() {
+  for (let id in countyLabels) {
+    const item = countyLabels[id];
+    // Completely remove the marker from the map
+    if (map.hasLayer(item.marker)) {
+      map.removeLayer(item.marker);
+    }
+  }
+});
+
+// When the county layer is ADDED to the map (toggled on)
+lidarIndexLayer.on('add', function() {
+  // Trigger a recalculation to put the labels back in the right spots
+  updateLabelPositions();
+});
+
+//static tile index on BLOB
+let staticTileIndex = null;
+
+let staticContourIndex = null;
+
+// Fetch DATA Grid (for the 1st Gen Contour download tool)
+fetch('https://g46prsaddst01.blob.core.windows.net/mntopo/mntopo2json/mn_10k_gird_4326.geojson')
+  .then(res => res.json())
+  .then(data => {
+    staticContourIndex = data;
+    console.log("10k Contour Grid Loaded for Intersection Logic");
+  })
+  .catch(err => console.error("Error loading contour grid:", err));
+
+fetch('https://g46prsaddst01.blob.core.windows.net/mntopo/mntopo2json/tile_index_just_mn_simp_4.json')
+  .then(res => res.json())
+  .then(data => {
+    staticTileIndex = data;
+    console.log("1st Gen Tile Index Loaded Locally");
+  })
+  .catch(err => console.error("Error loading tile index JSON:", err));
+
+// Attach listeners
+map.on('move', updateLabelPositions);
+lidarIndexLayer.on('load', updateLabelPositions);
+
+// Flight swaths (paginated loader and styling)
+const flightLinesGroup = L.featureGroup();
+
+function isValidHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch (e) {
+    return false;
+  }
+}
+
+function createFlightPopup(featureData) {
+  const { name, workUnit, formattedDate, metadata } = featureData;
+
+  const container = document.createElement('div');
+  container.className = 'flight-popup';
+
+  // Title
+  const title = document.createElement('b');
+  title.textContent = name;
+  container.appendChild(title);
+  container.appendChild(document.createElement('br'));
+
+  // Divider
+  const hr = document.createElement('hr');
+  hr.style.border = 'none';
+  hr.style.borderTop = '1px solid #78BE21';
+  hr.style.margin = '4px 0';
+  container.appendChild(hr);
+
+  // Work Unit
+  const wu = document.createElement('div');
+  const wuLabel = document.createElement('b');
+  wuLabel.textContent = 'Work Unit: ';
+  wu.appendChild(wuLabel);
+
+  const wuValue = document.createElement('span');
+  wuValue.textContent = workUnit;
+  wu.appendChild(wuValue);
+  container.appendChild(wu);
+
+  // Flight Date
+  const fd = document.createElement('div');
+  const fdLabel = document.createElement('b');
+  fdLabel.textContent = 'Flight Date: ';
+  fd.appendChild(fdLabel);
+
+  const fdValue = document.createElement('span');
+  fdValue.textContent = formattedDate;
+  fd.appendChild(fdValue);
+  container.appendChild(fd);
+
+  // Metadata link (only if valid URL)
+  if (metadata && isValidHttpUrl(metadata)) {
+    const md = document.createElement('div');
+
+    const mdLabel = document.createElement('b');
+    mdLabel.textContent = 'Metadata: ';
+    md.appendChild(mdLabel);
+
+    const link = document.createElement('a');
+    link.href = metadata;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'Link';
+
+    md.appendChild(link);
+    container.appendChild(md);
+  }
+
+  return container;
+}
+
+function onEachFlightFeature(feature, layer) {
+  const props = feature.properties || {};
+  const name = props.name || props.FLIGHT_NAME || 'Unnamed Flight';
+  const workUnit = props.work_unit || 'Unknown';
+  const dateValue = props.date || props.FLIGHT_DATE;
+  const metadata = props.metadata || null;
+
+  // Format date safely
+  let formattedDate = 'No date';
+  if (dateValue) {
+    const parsed = Number(dateValue);
+    formattedDate = !isNaN(parsed)
+      ? new Date(parsed).toISOString().split('T')[0]
+      : dateValue;
+  }
+
+  // Build secure popup element
+  const popupElement = createFlightPopup({
+    name,
+    workUnit,
+    formattedDate,
+    metadata
+  });
+
+  layer.bindPopup(popupElement);
+
+  // Hover styling
+  layer.on({
+    mouseover: function () {
+      this.setStyle({ weight: 3, color: '#FFC845', opacity: 1 });
+    },
+    mouseout: function () {
+      this.setStyle({ color: '#5D295F', weight: 2, opacity: 0.8 });
+    }
+  });
+}
+
+// Fetch all features with pagination
+function fetchAllFeatures(offset = 0, batchSize = 200) {
+  const q = L.esri.query({ url: FLIGHT_URL });
+  q.where('1=1').limit(batchSize).offset(offset).run(function (error, featureCollection) {
+    if (error) {
+      console.error('Query error:', error);
+      return;
+    }
+    const geojsonLayer = L.geoJSON(featureCollection, {
+      style: { color: '#5D295F', weight: 2, opacity: 0.8 },
+      onEachFeature: onEachFlightFeature
+    });
+    flightLinesGroup.addLayer(geojsonLayer);
+
+    // Continue pagination if needed
+    if (featureCollection.features.length === batchSize) {
+      fetchAllFeatures(offset + batchSize, batchSize);
+    } else {
+      console.log('All flight swaths loaded (or batch complete)');
+    }
+  });
+}
+
+// Start loading
+fetchAllFeatures();
+
+// 50 ft contours (ESRI Vector Tile Service)
+const contours50ft = L.esri.Vector.vectorTileLayer(contours50ftUrl,
+  {
+    // Zoom Control
+    // minZoom: 10,
+    // maxZoom: 15, 
+
+    // Pane Assignment (keep it in your contourPane)
+    pane: "pane50ft",
+
+  }
+);
+
+// 10 ft contours (visible only when zoomed into 12)
+const contours10ft = L.esri.tiledMapLayer({
+  url: contours10ftUrl,
+  minZoom: 15,
+  pane: "contourPane"
+});
+
+// 2 ft contours (ESRI Vector Tile Service)
+const contours2ft = L.esri.Vector.vectorTileLayer(contours2ftUrl,
+  {
+    // Zoom Control
+    minZoom: 16,
+    maxZoom: 19, 
+
+    // Pane Assignment (keep it in your contourPane)
+    pane: "pane2ft",
+
+  }
+);
+
+// Hillshade layer (Esri MapServer)
+const hillshadeLayer = L.esri.tiledMapLayer({
+  url: hillshadeUrl,
+  layers: [0],        // specify sublayer 0
+  opacity: 1,
+  attribution: 'MN DNR',
+  pane: "hillshadePaneDown"
+});
+
+// FEMA 100 year floodplain (Esri MapServer)
+// Create the Modernized Layer (5)
+const layerM = L.esri.featureLayer({
+  url: femaUrl1,
+  where: "fld_zone NOT IN ('X', 'D', 'AREA NOT INCLUDED')",
+  minZoom: 12,
+  style: function(feature) {
+    return { color: '#CD9C9B', weight: 1, fillOpacity: 0.9 };
+  },
+  pane: "femaPane"
+});
+
+// Create the Unmodernized Layer (4)
+const layerUM = L.esri.featureLayer({
+  url: femaUrl2,
+  minZoom: 12,
+  style: function(feature) {
+    // We'll make unmodernized slightly different (brownish) to distinguish them
+    return { color: '#FFEBBE', weight: 1, fillOpacity: 0.9 }; 
+  },
+  pane: "femaPane"
+});
+
+// COMBINE THEM into one single const
+const fema = L.layerGroup([layerUM, layerM]);
+
+// DEM 1st Gen image layer (Esri TileMap)
+const demLayer1stGen = L.esri.tiledMapLayer({
+  url: demLayer1stGenUrl, 
+  opacity: 0.65,
+  pane: "demPane"
+});
+
+// State management
+let currentContourRGB = [254, 204, 52]; // Default Yellow
+
+// Define the Legend Object
+const contourLegend = L.control({ position: 'bottomright' });
+
+// Function to build the HTML based on current state (Color + Zoom)
+function updateContourLegendHTML(div) {
+    if (!div) return;
+    
+    const colorStr = `rgb(${currentContourRGB.join(',')})`;
+    const intervals = getCurrentIntervals();
+
+    // Zoomed Out State
+    if (intervals.reg === 0) {
+        div.innerHTML = `
+            <div class="contour-legend">
+                <div style="font-weight:bold;">Dynamic Contours</div>
+                <div style="font-size:9px; color:#666; line-height: 1.1;">Not authoritative 3D Geo Contours</div>
+                <div style="font-size:10px; color:#666; margin-top:5px;">Zoom in to view</div>
+            </div>`;
+        return;
+    }
+
+    // Active State (Zoomed In)
+    div.innerHTML = `
+        <div class="contour-legend">
+            <div style="font-weight:bold;">Dynamic Contours</div>
+            <div style="font-size:9px; color:#666; line-height: 1.1; margin-bottom: 5px;">Not authoritative 3D Geo Contours</div>
+            <div style="margin-bottom: 4px;">
+                <span class="contour-legend-line" style="border-top: 3px solid ${colorStr};"></span>
+                <span>Index (${intervals.idx} ft)</span>
+            </div>
+            <div>
+                <span class="contour-legend-line" style="border-top: 1px solid ${colorStr}; opacity: 0.7;"></span>
+                <span>Intermediate (${intervals.reg} ft)</span>
+            </div>
+        </div>
+    `;
+}
+
+contourLegend.onAdd = function () {
+    const div = L.DomUtil.create('div', 'leaflet-control');
+    updateContourLegendHTML(div);
+    return div;
+};
+
+// Updated Helper: Adds "Remap" so the Colormap actually finds the lines
+function getContourRule(interval) {
+  return {
+    "rasterFunction": "Colormap",
+    "rasterFunctionArguments": {
+      "Colormap": [
+        // Ensure this uses the global currentContourRGB
+        [1, currentContourRGB[0], currentContourRGB[1], currentContourRGB[2]]
+      ],
+      "Raster": {
+        "rasterFunction": "Remap",
+        "rasterFunctionArguments": {
+          "InputRanges": [-1000, 20000], 
+          "OutputValues": [1],        
+          "Raster": {
+            "rasterFunction": "Contour",
+            "rasterFunctionArguments": {
+              "ContourInterval": interval,
+              "BaseContour": 0,
+              "ZFactor": 3.28084
+            }
+          }
+        }
+      }
+    }
+  };
+}
+
+// Initialize TWO layers instead of one
+const regularContours = L.esri.imageMapLayer({
+  url: demLayerUrl,
+  renderingRule: getContourRule(1),
+  format: 'png32',
+  opacity: 0,
+  pane: "contourPane"
+})
+
+const indexContours = L.esri.imageMapLayer({
+  url: demLayerUrl,
+  renderingRule: getContourRule(5),
+  format: 'png32',
+  opacity: 0,
+  pane: "contourPane"
+})
+
+const combinedContours = L.layerGroup([regularContours, indexContours]);
+
+// Updated Logic to control both layers
+function updateDynamicContours() {
+  // Always calculate the correct intervals for the current zoom level first
+  const z = map.getZoom();
+  let regInterval = 0;
+  let idxInterval = 0;
+
+  if (z >= 18) { regInterval = 1; idxInterval = 5; }
+  else if (z >= 16) { regInterval = 2; idxInterval = 10; }
+  else if (z >= 15) { regInterval = 10; idxInterval = 50; }
+  else if (z >= 12) { regInterval = 50; idxInterval = 250; }
+
+  // STOP if the layer group isn't actually on the map
+  if (!map.hasLayer(combinedContours)) return;
+    if (map.hasLayer(combinedContours)) {
+        const container = contourLegend.getContainer();
+        if (container) updateContourLegendHTML(container);
+    }
+
+  // If zoomed out too far, hide them (Opacity 0)
+  if (regInterval === 0) {
+    regularContours.setOpacity(0);
+    indexContours.setOpacity(0);
+  } else {
+    // If in range, set opacities and force the new Rendering Rule
+    regularContours.setOpacity(0.4); 
+    indexContours.setOpacity(1);
+    
+    // Explicitly set the rules to force a refresh from the server
+    regularContours.setRenderingRule(getContourRule(regInterval));
+    indexContours.setRenderingRule(getContourRule(idxInterval));
+
+  }
+}
+
+// LiDAR Status Legend
+const lidarStatusLegend = L.control({ position: 'bottomright' });
+
+lidarStatusLegend.onAdd = function () {
+  // Use 'fema-legend' class here instead of 'status-legend-panel'
+  const div = L.DomUtil.create('div', 'leaflet-control fema-legend'); 
+  
+  L.DomEvent.disableClickPropagation(div);
+
+  // Match the FEMA legend
+  div.innerHTML = `
+    <div class="legend-title">DEM Availability (0.5 meter)</div>
+    <div class="legend-item">
+      <span class="legend-color" style="background:#008EAA;"></span>
+      <span class="legend-label">Data forthcoming</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-color" style="background:#FFC845;"></span>
+      <span class="legend-label">Data not available</span>
+    </div>
+  `;
+  return div;
+};
+
+// Updated Zoom Listener (Handles both Contours and FEMA)
+map.on('zoomend', function() {
+  // Update Contours
+  updateDynamicContours();
+
+  // Update FEMA legend if it's currently on the map
+  if (map.hasLayer(fema)) {
+    const container = femaLegend.getContainer();
+    if (container) updateFemaLegendHTML(container);
+  }
+});
+
+// Updated Overlay Listeners
+map.on('overlayadd', function(e) {
+  // If Contours toggled on
+  if (e.layer === combinedContours) {
+    updateDynamicContours();
+    // Also ensure the contour legend is added (if not already handled)
+    contourLegend.addTo(map);
+  }
+  
+  // If FEMA toggled on
+  if (e.layer === fema) {
+    femaLegend.addTo(map);
+    const container = femaLegend.getContainer();
+    if (container) updateFemaLegendHTML(container);
+  }
+
+  // LiDAR Status check
+  if (e.layer === lidarStatusLayer) {
+    lidarStatusLegend.addTo(map);
+  }
+
+  //DEM layers check
+  if (e.layer === demLayer || e.layer === demLayerColorized || e.layer === demLayerTerrain || e.layer === demLayer1stGen) {
+    refreshElevationLegend();
+  }
+});
+
+map.on('overlayremove', function(e) {
+  if (e.layer === combinedContours) {
+    contourLegend.remove();
+  }
+  if (e.layer === fema) {
+    map.removeControl(femaLegend);
+  }
+
+    // LiDAR Status remove check
+  if (e.layer === lidarStatusLayer) {
+    lidarStatusLegend.remove();
+  }
+
+  //DEM Legened remove check
+  if (e.layer === demLayer || e.layer === demLayerColorized || e.layer === demLayerTerrain || e.layer === demLayer1stGen) {
+     refreshElevationLegend();
+   } 
+});
+
+// Run once on initial load
+updateDynamicContours();
+
+// Create a specific pane for Reference Data so it always sits on top of rasters
+map.createPane('statusPane');
+map.getPane('statusPane').style.zIndex = 650; // Higher than contours (600)
+
+// Initialize the geojson layer with a fallback style
+const lidarStatusLayer = L.geoJSON(null, {
+  pane: 'statusPane', 
+  interactive: false,
+  style: function (feature) {
+    // Determine color based on "name" or fallback to orange
+    const color = getLidarColor(feature.properties.name || ""); 
+    return { 
+      weight: 2, 
+      opacity: 1, 
+      color: 'white',      // Outline
+      fillColor: color,    // Fill
+      fillOpacity: 0.8,
+      className: 'soft-status-edge' // Add a class for CSS blurring
+    };
+  },
+});
+
+// Fetch with Debugging
+fetch('https://g46prsaddst01.blob.core.windows.net/mntopo/mntopo2json/lidarStatus4326_2.geojson')
+  .then(response => {
+    if (!response.ok) throw new Error("HTTP error " + response.status);
+    return response.json();
+  })
+  .then(data => {
+    console.log("GeoJSON Data Received:", data);
+    
+    // Safety check: verify coordinates are in WGS84 (approx -94, 46)
+    const firstCoord = data.features[0].geometry.coordinates[0][0][0];
+    if (Math.abs(firstCoord) > 180) {
+      console.error("COORD ERROR: Data is in UTM or Web Mercator, not Lat/Lng. It will not show up in the right place!");
+    }
+
+    lidarStatusLayer.addData(data);
+    console.log("Features added to map.");
+  })
+  .catch(err => {
+    console.error("Fetch failed. Is CORS enabled on the Blob?", err);
+  });
+
+// Lidar Status Color Function
+function getLidarColor(name) {
+  const n = name.toLowerCase();
+  if (n.includes("data forthcoming")) return "#008EAA";
+  if (n.includes("data not available")) return "#FFC845";
+  return "orange"; // Default for everything else
+}
+
+// Layer control with icons
+const baseMaps = {
+  '<i class="fa-solid fa-road"></i> Roads': osm,
+  '<i class="fa-solid fa-earth-americas"></i> Imagery': satellite
+};
+
+const overlayMaps = {
+  // --- 2nd Gen Group ---
+  '<i class="fa-solid fa-bars-staggered"></i> Contours 2nd Gen (Dynamic)': combinedContours,
+  '<i class="fa-solid fa-image"></i> DEM 2nd Gen - 0.5m (Grayscale)': demLayer,
+  '<i class="fa-solid fa-image"></i> DEM 2nd Gen - 0.5m (Accessible)': demLayerColorized,
+  '<i class="fa-solid fa-image"></i> DEM 2nd Gen - 0.5m (Terrain)': demLayerTerrain,
+  '<i class="fa-solid fa-image"></i> Hillshade 2nd Gen - 0.5m ': demLayerHillshade,
+  '<i class="fa-solid fa-draw-polygon"></i> Flight Swaths 2nd Gen': flightLinesGroup,
+  '<i class="fa-solid fa-draw-polygon"></i> DEM 2nd Gen Availability': lidarStatusLayer,
+
+  // --- 1st Gen Group ---
+  '<i class="fa-solid fa-bars-staggered"></i> Contours (50 ft) 1st Gen': contours50ft,
+  '<i class="fa-solid fa-bars-staggered"></i> Contours (10 ft) 1st Gen': contours10ft,
+  '<i class="fa-solid fa-bars-staggered"></i> Contours (2 ft) 1st Gen': contours2ft,
+  '<i class="fa-solid fa-image"></i> DEM 1st Gen - 1m (Color)': demLayer1stGen,
+  '<i class="fa-solid fa-image"></i> Hillshade 1st Gen - 1m': hillshadeLayer,
+  '<i class="fa-solid fa-draw-polygon"></i> Flight Lines 1st Gen': flightLines1stGen,
+  '<i class="fa-solid fa-draw-polygon"></i> FEMA Floodplain 1st Gen': fema,
+
+  // --- Reference Group ---
+  '<i class="fa-solid fa-draw-polygon"></i> County Boundaries': lidarIndexLayer
+};
+
+// Add the scale bar
+const dynamicScale = L.control({ position: 'bottomleft' });
+
+dynamicScale.onAdd = function (map) {
+  const div = L.DomUtil.create('div', 'custom-scale');
+  div.style.background = 'white';
+  div.style.padding = '4px 8px';
+  div.style.fontSize = '12px';
+  return div;
+};
+
+dynamicScale.addTo(map);
+
+// Update the scale whenever map zooms or moves
+function updateScale() {
+  const div = document.querySelector('.custom-scale');
+
+  // scale calculation constants
+  const DPI = 96;                // standard screen resolution
+  const inchesPerMeter = 39.37;  // 1 meter = 39.37 inches
+
+  // Leaflet Web Mercator CRS
+  const zoom = map.getZoom();
+  const worldWidthPx = 256 * Math.pow(2, zoom); // pixels across the world at this zoom
+
+  // Scale: 1 map unit = X ground units
+  // Formula: scale = meters per pixel * inches per meter * DPI
+  const metersPerPixel = 40075016.686 / worldWidthPx; // at equator, ignore cos(lat)
+  const scaleRatio = Math.round(metersPerPixel * inchesPerMeter * DPI);
+
+  div.innerHTML = `Scale: ${scaleRatio.toLocaleString()}`;
+}
+
+// Meter to feet conversion
+const METERS_TO_FEET = 3.28084;
+function metersToFeet(m) {
+  return m * METERS_TO_FEET;
+}
+
+// Unit conversion helpers  
+function metersToKilometers(m) {
+  return m / 1000;
+}
+
+function metersToMiles(m) {
+ return m * 0.000621371;
+}
+// Unit toggle state
+let currentUnits = 'm'; // 'm' or 'ft'
+
+// Initial update
+updateScale();
+
+// Update when map moves or zooms
+map.on('zoomend moveend', updateScale);
+
+// Add scale bar
+L.control.scale().addTo(map);
+
+// Define Minnesota bounding box
+const mnBounds = L.latLngBounds(
+  [43.5, -97.5],  // Southwest
+  [49.4, -89.5]   // Northeast
+);
+
+// Zoom to MN control button
+const ZoomToMNControl = L.Control.extend({
+  options: { position: 'topleft' },
+  onAdd: function () {
+    const button = L.DomUtil.create('div', 'zoom-to-mn');
+    button.innerHTML = '<i class="fa-solid fa-globe"></i>';
+    button.title = "Zoom to Minnesota";
+    button.setAttribute('tabindex', 0);
+    button.setAttribute('aria-label', 'Zoom to Minnesota');
+    button.setAttribute('role', 'button');
+
+    // Prevent map drag/click interference
+    L.DomEvent.disableClickPropagation(button);
+
+    // Click event: zoom to Minnesota
+    L.DomEvent.on(button, 'click', function () {
+      map.fitBounds(mnBounds);
+    });
+    L.DomEvent.on(button, 'keyup', function(event) {
+      if (event.keyCode === 13){
+        map.fitBounds(mnBounds);
+      }
+    })
+
+    return button;
+  }
+});
+
+// Add to map extnet control
+map.addControl(new ZoomToMNControl());
+
+// ESRI API Key (expires June 2026)
+const apiKey = esriToken;
+
+// Add geocoder
+const searchControl = L.esri.Geocoding.geosearch({
+  position: "topright",
+  providers: [
+    L.esri.Geocoding.arcgisOnlineProvider({
+      // Suggestion: limit search to USA for better accuracy
+      apikey: apiKey,
+      countries: ['USA'], 
+      categories: ['Address', 'Postal', 'Populated Place','Coordinate System']
+    })
+  ],
+  searchBounds: mnBounds, // Confines search to bounding box of Minnesota
+  useMapBounds: false,    // Set to false so it doesn't search current map view instead of MN
+  placeholder: 'Search for MN addresses...',
+  expanded: false
+}).addTo(map);
+
+// Helper: Fetch USGS 3DEP Lidar Point Cloud data
+// Add externalSignal as the second parameter
+async function fetchUSGSPointCloud(geojson, externalSignal, retries = 3) {
+  try {
+    const bounds = L.geoJSON(geojson).getBounds();
+    const west = bounds.getWest().toFixed(4);
+    const south = bounds.getSouth().toFixed(4);
+    const east = bounds.getEast().toFixed(4);
+    const north = bounds.getNorth().toFixed(4);
+    
+    const bbox = [west, south, east, north].join(',');
+    const url = `https://tnmaccess.nationalmap.gov/api/v1/products?datasets=Lidar%20Point%20Cloud%20(LPC)&bbox=${bbox}&prodFormats=LAZ&max=500`;
+    
+    const timeoutController = new AbortController();
+    const timeoutId = setTimeout(() => timeoutController.abort(), 5000);
+
+    // Combine your 5s timeout with the "kill switch" from the UI
+    const combinedSignal = AbortSignal.any([externalSignal, timeoutController.signal]);
+
+    const response = await fetch(url, { signal: combinedSignal });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) throw new Error('USGS Server Error');
+    const data = await response.json();
+    
+    if ((!data.items || data.items.length === 0) && retries > 0) {
+      console.warn(`USGS returned 0 items. Retrying... (${retries} left)`);
+      await new Promise(res => setTimeout(res, 1000));
+      // Pass externalSignal through to the retry!
+      return fetchUSGSPointCloud(geojson, externalSignal, retries - 1);
+    }
+
+    return data.items || [];
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      if (externalSignal && externalSignal.aborted) {
+        console.log("USGS Fetch killed: user started new drawing.");
+        return null; 
+      }
+    }
+    if (retries > 0) {
+      return fetchUSGSPointCloud(geojson, externalSignal, retries - 1);
+    }
+    return null; 
+  }
+}
+
+// Add layer control and keep a reference
+const layerControl = L.control.layers(baseMaps, overlayMaps, { collapsed: true }).addTo(map);
+
+function wrapLayersInFieldsets() {
+  const container = layerControl.getContainer();
+  if (!container) return;
+
+  // Handle Basemaps fieldset
+  const baseGroup = container.querySelector('.leaflet-control-layers-base');
+  if (baseGroup && !baseGroup.querySelector('fieldset')) {
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = 'Basemaps';
+    fieldset.appendChild(legend);
+    while (baseGroup.firstChild) {
+      fieldset.appendChild(baseGroup.firstChild);
+    }
+    baseGroup.appendChild(fieldset);
+  }
+
+  // Handle Overlays fieldset
+  const overlayGroup = container.querySelector('.leaflet-control-layers-overlays');
+  if (overlayGroup && !overlayGroup.querySelector('fieldset')) {
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = 'Map Layers';
+    fieldset.appendChild(legend);
+    
+    while (overlayGroup.firstChild) {
+      fieldset.appendChild(overlayGroup.firstChild);
+    }
+    overlayGroup.appendChild(fieldset);
+
+    // Inject Collapsible Headers
+    const labels = fieldset.querySelectorAll('label');
+    
+    // startOpen property to control initial state
+    const headerMap = [
+      { startText: 'Contours 2nd Gen (Dynamic)', header: '2nd Gen Lidar (2021-2024)', startOpen: true },
+      { startText: 'Contours (50 ft) 1st Gen', header: '1st Gen Lidar (2008-2012)', startOpen: false },
+      { startText: 'County Boundaries', header: 'Reference Data', startOpen: false }
+    ];
+
+    labels.forEach(label => {
+      const text = label.textContent.trim();
+      
+      headerMap.forEach(item => {
+        if (text === item.startText) {
+          const headerDiv = document.createElement('div');
+          headerDiv.className = 'layer-group-header';
+          headerDiv.innerHTML = `
+            <strong>${item.header}</strong>
+            <i class="fa-solid fa-chevron-down toggle-icon"></i>
+          `;
+          
+L.DomEvent.on(headerDiv, 'click', function(e) {
+            L.DomEvent.stopPropagation(e);
+            
+            const icon = this.querySelector('.toggle-icon');
+            const isCollapsed = this.classList.toggle('collapsed-group');
+            
+            let next = this.nextElementSibling;
+            while (next && !next.classList.contains('layer-group-header')) {
+              // Toggle visibility
+              next.style.display = isCollapsed ? 'none' : 'block';
+              next = next.nextElementSibling;
+            }
+
+            if (isCollapsed) {
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-right');
+            } else {
+                icon.classList.replace('fa-chevron-right', 'fa-chevron-down');
+            }
+
+            const controlContainer = layerControl.getContainer();
+            if (controlContainer.classList.contains('leaflet-control-layers-expanded')) {
+                controlContainer.style.height = 'auto';
+            }
+          });
+
+          fieldset.insertBefore(headerDiv, label);
+          
+          if (!item.startOpen) {
+            headerDiv.click(); 
+          }
+        }
+      });
+    });
+  }
+}
+// Call after adding layer control
+wrapLayersInFieldsets();
+
+//Opacity Slider Function - adds a slider to the layer control for a given layer and label text
+function addOpacitySlider(layer, labelText) {
+  setTimeout(() => {
+    const overlays = document.querySelectorAll('.leaflet-control-layers-overlays label');
+    overlays.forEach(label => {
+      const visibleText = label.innerText.trim();
+
+      if (visibleText === labelText) {
+        if (label.querySelector('.layer-opacity-container')) return;
+
+        // Create a wrapper container
+        const sliderWrapper = document.createElement('div');
+        sliderWrapper.className = 'layer-opacity-container';
+        sliderWrapper.style.display = 'flex';
+        sliderWrapper.style.alignItems = 'center';
+        sliderWrapper.style.gap = '8px';
+        sliderWrapper.style.paddingLeft = '25px';
+        sliderWrapper.style.marginTop = '4px';
+
+        // Add a transparency icon (FontAwesome - since you already use it)
+        const icon = document.createElement('i');
+        icon.className = 'fa-solid fa-circle-half-stroke';
+        icon.style.fontSize = '10px';
+        icon.style.color = '#666';
+
+        // Create the slider
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = 0;
+        slider.max = 100;
+        slider.value = (layer.options.opacity || 1.0) * 100;
+        slider.style.width = '70px';
+        slider.style.height = '6px';
+        slider.style.cursor = 'pointer';
+
+        // Create the percentage display
+        const percentLabel = document.createElement('span');
+        percentLabel.innerText = slider.value + '%';
+        percentLabel.style.fontSize = '10px';
+        percentLabel.style.minWidth = '25px';
+        percentLabel.style.color = '#666';
+
+        // Update opacity AND label on input
+        slider.oninput = function() {
+          layer.setOpacity(this.value / 100);
+          percentLabel.innerText = this.value + '%';
+        };
+
+        L.DomEvent.disableClickPropagation(sliderWrapper);
+
+        // Assemble everything
+        sliderWrapper.appendChild(icon);
+        sliderWrapper.appendChild(slider);
+        sliderWrapper.appendChild(percentLabel);
+        label.appendChild(sliderWrapper);
+      }
+    });
+  }, 100);
+}
+
+// call the opacity slider function for each layer
+addOpacitySlider(demLayer, 'DEM 2nd Gen - 0.5m (Grayscale)');
+addOpacitySlider(demLayerColorized, 'DEM 2nd Gen - 0.5m (Accessible)');
+addOpacitySlider(demLayerTerrain, 'DEM 2nd Gen - 0.5m (Terrain)');
+addOpacitySlider(demLayerHillshade, 'Hillshade 2nd Gen - 0.5m');
+addOpacitySlider(demLayer1stGen, 'DEM 1st Gen - 1m (Color)');
+addOpacitySlider(hillshadeLayer, 'Hillshade 1st Gen - 1m');
+
+//interval toggle function for contours
+function getCurrentIntervals() {
+    const z = map.getZoom();
+    if (z >= 18)      return { reg: 1, idx: 5 };
+    else if (z >= 16) return { reg: 2, idx: 10 };
+    else if (z >= 15) return { reg: 10, idx: 50 };
+    else if (z >= 12) return { reg: 50, idx: 250 };
+    else              return { reg: 0, idx: 0 }; // Too far out
+}
+
+//color toggle function
+function addColorToggle(layer, labelText) {
+  setTimeout(() => {
+    const overlays = document.querySelectorAll('.leaflet-control-layers-overlays label');
+
+    overlays.forEach(label => {
+      const visibleText = label.innerText.trim();
+
+      if (visibleText === labelText) {
+        if (label.querySelector('.layer-color-toggle-wrapper')) return;
+
+        // Container for alignment
+        const wrapper = document.createElement('div');
+        wrapper.className = 'layer-color-toggle-wrapper';
+        wrapper.style.paddingLeft = '25px';
+        wrapper.style.marginTop = '6px';
+        wrapper.style.marginBottom = '4px';
+
+        const button = document.createElement('button');
+        button.className = 'layer-color-toggle-btn';
+
+        const palette = [
+          { name: 'Yellow', rgb: [254, 204, 52] },
+          { name: 'Red',    rgb: [255, 0, 0] },
+          { name: 'Black',  rgb: [0, 0, 0] }
+        ];
+
+        let colorIndex = 0; 
+
+        // Helper function to update button appearance
+        const updateButtonUI = () => {
+          const current = palette[colorIndex];
+          button.innerHTML = `
+            <span class="color-swatch-circle" style="background: rgb(${current.rgb.join(',')})"></span>
+            <span>${current.name}</span>
+          `;
+        };
+
+        // Initialize UI
+        updateButtonUI();
+
+        button.onclick = function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          colorIndex = (colorIndex + 1) % palette.length;
+          currentContourRGB = palette[colorIndex].rgb;
+          
+          updateButtonUI();
+          updateDynamicContours();
+
+          // Refresh Legend
+          const container = contourLegend.getContainer();
+          if (container) updateContourLegendHTML(container);  
+        };
+
+        L.DomEvent.disableClickPropagation(wrapper);
+        wrapper.appendChild(button);
+        label.appendChild(wrapper);
+      }
+    });
+  }, 100);
+}
+
+// call the opacity slider function for each layer
+addColorToggle(combinedContours, 'Contours 2nd Gen (Dynamic)');
+
+// Add vector basemap
+L.esri.Vector.vectorBasemapLayer("arcgis/navigation", {
+  apikey: apiKey
+}).addTo(map);
+
+// Accessibility: set ARIA label on geocoder input drawer mouse marker
+const observer = new MutationObserver((mutations) => {
+  // Geocoder Input
+  const geocoderInput = document.querySelector('.geocoder-control-input');
+  if (geocoderInput && !geocoderInput.hasAttribute('aria-label')) {
+    geocoderInput.setAttribute('aria-label', 'Search for a Minnesota location');
+    geocoderInput.addEventListener('focus', () => {
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            document.body.scrollTop = 0;
+        }, 50);
+    });
+  }
+
+  // Leaflet Draw "Mouse Marker"
+  // This finds the phantom marker that follows the mouse during drawing
+  const mouseMarker = document.querySelector('.leaflet-mouse-marker');
+  if (mouseMarker && !mouseMarker.hasAttribute('aria-label')) {
+    mouseMarker.setAttribute('aria-label', 'Map drawing helper');
+    mouseMarker.setAttribute('aria-hidden', 'true');
+    mouseMarker.setAttribute('tabindex', '-1'); 
+  }
+});
+
+observer.observe(document.body, { childList: true, subtree: true });
+
+const results = L.layerGroup().addTo(map);
+
+// Custom Font Awesome marker icon
+const searchIcon = L.divIcon({
+  html: '<i class="fa-solid fa-location-crosshairs"></i>',
+  className: 'custom-search-icon'
+});
+searchControl.on("results", function (data) {
+  results.clearLayers();
+  if (data.results.length > 0) {
+    const latlng = data.results[0].latlng;
+
+    // Create marker and popup
+    const marker = L.marker(latlng, { icon: searchIcon })
+      .addTo(results)
+      .bindPopup(data.results[0].text)
+      .openPopup();
+
+    map.setView(latlng, 15);
+
+    // Remove crosshair marker when popup is closed
+    map.once('popupclose', function () {
+      if (results.hasLayer(marker)) {
+        results.removeLayer(marker);
+      }
+    });
+  }
+});
+
+// Optional proj defs
+if (typeof proj4 !== 'undefined') {
+  proj4.defs("EPSG:4326", "+proj=longlat +datum=WGS84 +no_defs");
+  proj4.defs("EPSG:6344", "+proj=utm +zone=15 +datum=NAD83 +units=m +no_defs +type=crs");
+}
+
+    // Convert LatLng to UTM Zone 15N
+  function latLngToUTM15(latlng) {
+    if (typeof proj4 === 'undefined') return null;
+
+    // proj4 expects [lon, lat]
+    const [easting, northing] = proj4(
+      "EPSG:4326",
+      "EPSG:6344",
+      [latlng.lng, latlng.lat]
+    );
+
+    return {
+      easting,
+      northing,
+      zone: "15N"
+    };
+  }
+// Draw controls & state
+const drawnItems = new L.FeatureGroup();
+map.addLayer(drawnItems);
+
+// Global variable to track the currently active drawing tool
+let currentDrawHandler = null;
+let activeToolType = null; // Tracks 'polyline', 'marker', or 'polygon'
+
+// Global variable to track the marker
+let customMarker = null;
+
+// Custom Font Awesome marker icon (Used for the Draw Tool cursor)
+const faDrawIcon = L.divIcon({
+  html: '<i class="fa-solid fa-location-dot custom-fa-icon" aria-label="Elevation Point Marker"></i>',
+  className: '',
+  iconSize: [24, 24],
+  iconAnchor: [12, 24]
+});
+
+// Create a hidden draw control
+const drawControl = new L.Control.Draw({
+  draw: {
+    // ENABLE POLYGON STYLING HERE
+    polygon: {
+      allowIntersection: false, // Recommended for clean data queries
+    shapeOptions: {
+      color: '#003865',
+      opacity: 1.0,
+      fillOpacity: 0.1,
+      weight: 4,
+      className: 'drawn-polygon-outline'
+    }
+    },
+    rectangle: false,
+    circle: false,
+    circlemarker: false,
+    marker: { icon: faDrawIcon },
+    polyline: { 
+      shapeOptions: { 
+        color: '#003865', 
+        weight: 4, 
+        opacity: 1.0,
+        className: 'drawn-line-outline' 
+      } 
+    }
+  },
+  edit: false
+});
+map.addControl(drawControl);
+
+// Remove the default Leaflet Draw toolbar
+document.querySelector('.leaflet-draw-toolbar')?.remove();
+
+// UI References
+const spinner = document.getElementById('spinner');
+const profilePanel = document.getElementById('profile-panel');
+const closeBtn = document.getElementById('close-profile');
+
+// HELPER: completely reset drawing state
+function resetMapDrawing() {
+  if (currentDrawHandler) {
+    currentDrawHandler.disable();
+    currentDrawHandler = null;
+  }
+  activeToolType = null; // Reset the tracker
+  
+function resetMapDrawing() {
+  map.closePopup(); 
+  
+  if (currentDrawHandler) {
+    currentDrawHandler.disable();
+    currentDrawHandler = null;
+  }
+  activeToolType = null; 
+  
+  document.querySelectorAll('.zoom-to-mn').forEach(btn => {
+    btn.classList.remove('active-tool');
+  });
+
+  drawnItems.clearLayers();
+  if (customMarker) {
+    map.removeLayer(customMarker);
+    customMarker = null;
+  }
+  if (profilePanel) {
+    profilePanel.classList.remove('visible');
+    profilePanel.setAttribute('aria-hidden', 'true');
+  }
+  if (spinner) spinner.style.display = 'none';
+  
+  // Also kill any active fetches when the map is reset
+  if (activeAbortController) activeAbortController.abort();
+}
+
+  // Remove active class from all custom buttons
+  document.querySelectorAll('.zoom-to-mn').forEach(btn => {
+    btn.classList.remove('active-tool');
+  });
+
+  drawnItems.clearLayers();
+  if (customMarker) {
+    map.removeLayer(customMarker);
+    customMarker = null;
+  }
+  if (profilePanel) {
+    profilePanel.classList.remove('visible');
+    profilePanel.setAttribute('aria-hidden', 'true');
+  }
+  if (spinner) spinner.style.display = 'none';
+}
+
+function drawProfileLine(buttonElem){
+  if (activeToolType === 'polyline') {
+    resetMapDrawing();
+    return;
+  }
+  resetMapDrawing();
+  activeToolType = 'polyline';
+  if (buttonElem) buttonElem.classList.add('active-tool');
+  
+  currentDrawHandler = new L.Draw.Polyline(map, drawControl.options.draw.polyline);
+  currentDrawHandler.enable();
+}
+
+// --- Custom button: Elevation profile line ---
+const ElevationDrawControl = L.Control.extend({
+  options: { position: 'topleft' },
+  onAdd: function () {
+    const button = L.DomUtil.create('div', 'zoom-to-mn');
+    button.innerHTML = '<i class="fa-solid fa-chart-line"></i>';
+    button.title = "Draw line for elevation profile";
+    button.setAttribute("tabindex", "0");
+    button.setAttribute("role", "button");
+    button.setAttribute("aria-label", "Create elevation profile");
+    
+    L.DomEvent.disableClickPropagation(button);
+    L.DomEvent.on(button, 'click', (e) => { 
+      L.DomEvent.stop(e); 
+      drawProfileLine(button); 
+    });
+    L.DomEvent.on(button, 'keyup', (e) => {
+      if (e.keyCode === 13) {
+        L.DomEvent.stop(e);
+        drawProfileLine(button);
+      }
+    });
+    return button;
+  }
+});
+map.addControl(new ElevationDrawControl());
+
+function getMapPointElevation(buttonElem) {
+  if (activeToolType === 'marker') {
+    resetMapDrawing();
+    return;
+  }
+  resetMapDrawing();
+  activeToolType = 'marker';
+  if (buttonElem) buttonElem.classList.add('active-tool');
+
+  currentDrawHandler = new L.Draw.Marker(map, drawControl.options.draw.marker);
+  currentDrawHandler.enable();
+}
+// --- Custom button: Point elevation marker ---
+const MarkerDrawControl = L.Control.extend({
+  options: { position: 'topleft' },
+  onAdd: function () {
+    const button = L.DomUtil.create('div', 'zoom-to-mn');
+    button.innerHTML = '<i class="fa-solid fa-location-dot"></i>';
+    button.title = "Add point for elevation";
+    button.setAttribute("tabindex", "0");
+    button.setAttribute("role", "button");
+    button.setAttribute("aria-label", "Get point elevation");
+    
+    L.DomEvent.disableClickPropagation(button);
+    L.DomEvent.on(button, 'click', (e) => { 
+      L.DomEvent.stop(e); 
+      getMapPointElevation(button); 
+    });
+    L.DomEvent.on(button, 'keyup', (e) => {
+      if (e.keyCode === 13) {
+        L.DomEvent.stop(e); 
+        getMapPointElevation(button); 
+      }
+    });
+    return button;
+  }
+});
+map.addControl(new MarkerDrawControl());
+
+const DownloadLidarControl = L.Control.extend({
+  options: { position: 'topleft' },
+  onAdd: function () {
+    const button = L.DomUtil.create('div', 'zoom-to-mn');
+    button.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i>';
+    button.title = "Download Lidar Data (Select Area)";
+    button.setAttribute("tabindex", "0");
+    button.setAttribute("role", "button");
+    button.setAttribute("aria-label", "Select area for download");
+    
+    L.DomEvent.disableClickPropagation(button);
+    L.DomEvent.on(button, 'click', (e) => { 
+      L.DomEvent.stop(e); 
+      startPolygonDraw(button); 
+    });
+    L.DomEvent.on(button, 'keyup', (e) => { 
+      if (e.keyCode === 13) {
+        L.DomEvent.stop(e);
+        startPolygonDraw(button);
+      }
+    });
+    return button;
+  }
+});
+map.addControl(new DownloadLidarControl())
+
+// add polygon control button
+function startPolygonDraw(buttonElem) {
+  if (activeToolType === 'polygon') {
+    resetMapDrawing();
+    return;
+  }
+  resetMapDrawing();
+  activeToolType = 'polygon';
+  if (buttonElem) buttonElem.classList.add('active-tool');
+
+  currentDrawHandler = new L.Draw.Polygon(map, drawControl.options.draw.polygon);
+  currentDrawHandler.enable();
+}
+
+// Interpolate evenly spaced points along polyline
+function interpolateFixedPoints(latlngs, numPoints) {
+  if (!latlngs || latlngs.length < 2) return [];
+  const segs = [];
+  const cumDist = [0];
+  let totalDist = 0;
+  for (let i = 0; i < latlngs.length - 1; i++) {
+    const d = L.latLng(latlngs[i]).distanceTo(L.latLng(latlngs[i + 1]));
+    segs.push(d);
+    totalDist += d;
+    cumDist.push(totalDist);
+  }
+  const points = [];
+  for (let n = 0; n < numPoints; n++) {
+    const targetDist = (n / (numPoints - 1)) * totalDist;
+    let i = 0;
+    while (i < segs.length && targetDist > cumDist[i + 1]) i++;
+    const p1 = L.latLng(latlngs[i]);
+    const p2 = L.latLng(latlngs[i + 1]);
+    const segLength = segs[i];
+    const frac = segLength === 0 ? 0 : (targetDist - cumDist[i]) / segLength;
+    const lat = p1.lat + frac * (p2.lat - p1.lat);
+    const lng = p1.lng + frac * (p2.lng - p1.lng);
+    points.push([lat, lng, targetDist]);
+  }
+  points.sort((a, b) => a[2] - b[2]);
+  return points;
+}
+
+let currentProfileLine = null;
+let profileRoadCrossings = [];
+let profileRoadQueryId = 0;
+const profileRoadLayer = L.layerGroup().addTo(map);
+
+function clearProfileRoadCrossings() {
+  profileRoadCrossings = [];
+  profileRoadLayer.clearLayers();
+}
+
+function renderProfileRoadCrossings() {
+  profileRoadLayer.clearLayers();
+  profileRoadCrossings.forEach(crossing => {
+    L.circleMarker([crossing.lat, crossing.lon], {
+      radius: 5,
+      color: '#A6192E',
+      weight: 2,
+      fillColor: '#fff',
+      fillOpacity: 1
+    }).bindTooltip(crossing.name, {
+      permanent: true,
+      direction: 'top',
+      offset: [0, -5],
+      className: 'profile-road-label'
+    }).addTo(profileRoadLayer);
+  });
+}
+
+async function findProfileRoadCrossings(line, queryId) {
+  const coordinates = line.getLatLngs().map(latlng => [latlng.lng, latlng.lat]);
+  const params = new URLSearchParams({
+    f: 'geojson',
+    geometry: JSON.stringify({ paths: [coordinates], spatialReference: { wkid: 4326 } }),
+    geometryType: 'esriGeometryPolyline',
+    inSR: '4326',
+    spatialRel: 'esriSpatialRelIntersects',
+    outFields: 'ST_CONCAT',
+    returnGeometry: 'true',
+    outSR: '4326'
+  });
+  const response = await fetch(`${roadCenterlinesUrl}/query?${params}`);
+  if (!response.ok) throw new Error(`Road service returned ${response.status}`);
+  const data = await response.json();
+  if (queryId !== profileRoadQueryId) return [];
+
+  const profileFeature = turf.lineString(coordinates);
+  const crossings = [];
+  (data.features || []).forEach(feature => {
+    const name = String(feature.properties?.ST_CONCAT || '').trim();
+    if (!name || !feature.geometry) return;
+    const geometry = feature.geometry.type === 'MultiLineString'
+      ? turf.multiLineString(feature.geometry.coordinates)
+      : turf.lineString(feature.geometry.coordinates);
+    turf.lineIntersect(profileFeature, geometry).features.forEach(intersection => {
+      const nearest = turf.nearestPointOnLine(profileFeature, intersection, { units: 'meters' });
+      const distance = Number(nearest.properties?.location);
+      if (!Number.isFinite(distance)) return;
+      if (!crossings.some(crossing => crossing.name === name)) {
+        crossings.push({
+          name,
+          distance,
+          lat: intersection.geometry.coordinates[1],
+          lon: intersection.geometry.coordinates[0]
+        });
+      }
+    });
+  });
+  return crossings.sort((a, b) => a.distance - b.distance);
+}
+
+function refreshProfileRoadCrossings() {
+  profileRoadQueryId += 1;
+  const queryId = profileRoadQueryId;
+  clearProfileRoadCrossings();
+  if (!currentProfileLine || !document.getElementById('show-road-crossings')?.checked) {
+    if (window.elevChart) window.elevChart.update();
+    return;
+  }
+  findProfileRoadCrossings(currentProfileLine, queryId)
+    .then(crossings => {
+      if (queryId !== profileRoadQueryId) return;
+      profileRoadCrossings = crossings;
+      renderProfileRoadCrossings();
+      if (window.elevChart) window.elevChart.update();
+    })
+    .catch(() => {
+      if (queryId !== profileRoadQueryId) return;
+      clearProfileRoadCrossings();
+      if (window.elevChart) window.elevChart.update();
+    });
+}
+
+const profileRoadCrossingPlugin = {
+  id: 'profileRoadCrossings',
+  afterDraw(chart) {
+    if (!profileRoadCrossings.length || !window.lastElevations1stGen?.length) return;
+    const totalDistance = window.lastElevations1stGen[window.lastElevations1stGen.length - 1].dist;
+    const xScale = chart.scales.x;
+    const context = chart.ctx;
+    context.save();
+    context.strokeStyle = '#A6192E';
+    context.fillStyle = '#A6192E';
+    context.font = 'bold 14px Calibri, sans-serif';
+    profileRoadCrossings.forEach(crossing => {
+      const x = xScale.getPixelForValue(xScale.max * (crossing.distance / totalDistance));
+      context.beginPath();
+      context.setLineDash([4, 4]);
+      context.moveTo(x, chart.chartArea.top);
+      context.lineTo(x, chart.chartArea.bottom);
+      context.stroke();
+      context.setLineDash([]);
+      context.save();
+      context.translate(x + 3, chart.chartArea.bottom - 4);
+      context.rotate(-Math.PI / 2);
+      const label = `${crossing.name} (${formatDistance(crossing.distance)})`;
+      context.lineJoin = 'round';
+      context.lineWidth = 3;
+      context.strokeStyle = 'white';
+      context.strokeText(label, 0, 0);
+      context.fillStyle = '#A6192E';
+      context.fillText(label, 0, 0);
+      context.restore();
+    });
+    context.restore();
+  }
+};
+
+function formatDistance(distanceMeters) {
+  const useFeet = currentUnits === 'ft';
+  if (useFeet) {
+    const feet = distanceMeters * 3.28084;
+    return `${(feet > 5280 ? feet / 5280 : feet).toFixed(feet > 5280 ? 1 : 0)} ${feet > 5280 ? 'mi' : 'ft'}`;
+  }
+  return `${(distanceMeters > 1000 ? distanceMeters / 1000 : distanceMeters).toFixed(distanceMeters > 1000 ? 1 : 0)} ${distanceMeters > 1000 ? 'km' : 'm'}`;
+}
+
+// --- SINGLE Event Listener for Drawing ---
+map.on(L.Draw.Event.CREATED, async function (event) {
+  const layer = event.layer;
+
+  if (activeAbortController) activeAbortController.abort(); // Kill current USGS fetch
+  activeAbortController = new AbortController();
+  
+  currentRequestId++; // Increment global ID
+  const thisRequestId = currentRequestId; // Capture THIS ID for this specific drawing
+
+  drawnItems.clearLayers();
+  profilePanel.classList.remove('visible');
+  const roadToggle = document.getElementById('show-road-crossings');
+  if (roadToggle) roadToggle.checked = false;
+  profileRoadQueryId += 1;
+  currentProfileLine = null;
+  clearProfileRoadCrossings();
+
+  if (customMarker) {
+    map.removeLayer(customMarker);
+    customMarker = null;
+  }
+
+  drawnItems.addLayer(layer);
+
+  // --- Logic for POINT (Marker) ---
+  if (layer instanceof L.Marker) {
+    const latlng = layer.getLatLng();
+    spinner.style.display = 'block';
+
+    map.removeLayer(layer);
+
+    const faIcon = L.divIcon({
+      html: '<i class="fa-solid fa-location-dot custom-fa-icon" aria-label="Selected Elevation Point"></i>',
+      className: '',
+      iconSize: [24, 24],
+      iconAnchor: [12, 24]
+    });
+
+    customMarker = L.marker(latlng, {
+      icon: faIcon,
+      title: "Selected Elevation Point",
+      alt: "Selected Elevation Point"
+    }).addTo(map);
+
+    // Helper to wrap the Esri Identify call in a Promise
+    const identifyElev = (url) => {
+      return new Promise((resolve) => {
+        L.esri.identifyImage({ url: url })
+          .at([latlng.lat, latlng.lng])
+          .run((error, result) => {
+            if (error) resolve(null);
+            const val = result?.pixel?.properties?.value;
+            resolve((val && val !== "NoData") ? parseFloat(val) : null);
+          });
+      });
+    };
+
+    // Run both requests in parallel
+    Promise.all([
+      identifyElev(demLayer.options.url),           // 2nd Gen
+      identifyElev(demLayer1stGenImageServer)        // 1st Gen
+    ]).then(([elev2nd, elev1st]) => {
+      spinner.style.display = 'none';
+      const popupOptions = { offset: L.point(0, -30) };
+
+      const lat = latlng.lat.toFixed(5);
+      const lng = latlng.lng.toFixed(5);
+      const utm = latLngToUTM15(latlng);
+      const easting = utm ? utm.easting.toFixed(2) : "N/A";
+      const northing = utm ? utm.northing.toFixed(2) : "N/A";
+
+      // Build the Content String
+      let content = `<div class="elev-popup">
+        <div class="popup-title">Elevation Data and Coordinates</div>
+        <hr style="border: none; border-top: 1px solid #78BE21; margin: 4px 0;">`;
+
+      // --- 2nd Gen Section ---
+      content += `<b style="color: #003865;"><u>2nd Gen Lidar (0.5m)</u></b><br>`;
+      if (elev2nd !== null) {
+        content += `${elev2nd.toFixed(2)} meters | ${(elev2nd * 3.28084).toFixed(1)} feet<br>`;
+      } else {
+        content += `<span style="color: #A6192E; font-size: 11px;">Data not available in this area</span><br>`;
+      }
+
+      content += `<div style="margin-top: 5px;"></div>`;
+
+      // --- 1st Gen Section ---
+      content += `<b style="color: #003865;"><u>1st Gen Lidar (1m)</u></b><br>`;
+      if (elev1st !== null) {
+        content += `${elev1st.toFixed(2)} meters | ${(elev1st * 3.28084).toFixed(1)} feet<br>`;
+      } else {
+        content += `<span style="color: #A6192E; font-size: 11px;">Data not available in this area</span><br>`;
+      }
+
+      // --- Coordinates Section ---
+      content += `<hr style="border: none; border-top: 1px solid #ccc; margin: 8px 0 4px 0;">
+        <b><u>WGS 84</u></b><br>
+        Lat: ${lat}, Lon: ${lng}<br><br>
+        <b><u>NAD83 UTM 15 - NAVD88</u></b><br>
+        E: ${easting} m, N: ${northing} m
+      </div>`;
+
+      L.popup(popupOptions)
+        .setLatLng(latlng)
+        .setContent(content)
+        .openOn(map);
+
+      map.once('popupclose', function () {
+        if (customMarker) {
+          map.removeLayer(customMarker);
+          customMarker = null;
+        }
+      });
+
+      if (activeToolType === 'marker') {
+        setTimeout(() => { if (currentDrawHandler) currentDrawHandler.enable(); }, 100);
+      }
+    });
+  }
+
+// --- Logic for POLYGON (Lidar Downloads) ---
+if (layer instanceof L.Polygon) {
+  // Get the area in Square Miles
+  // L.GeometryUtil.geodesicArea returns square meters. 
+  // We multiply by 0.0000003861 to get Square Miles.
+  const latlngs = layer.getLatLngs()[0];
+  const areaSqMeters = L.GeometryUtil.geodesicArea(latlngs);
+  const areaSqMiles = areaSqMeters * 0.000000386102;
+  
+  const MAX_AREA = 100; // Limit in Square Miles
+
+  if (areaSqMiles > MAX_AREA) {
+    // Selection too big: remove the shape and show warning
+    drawnItems.removeLayer(layer);
+    
+    L.popup()
+      .setLatLng(layer.getBounds().getCenter())
+      .setContent(`
+        <div class="elev-popup">
+          <div class="popup-title" style="color: #A6192E;">Area Too Large</div>
+          <hr style="border: none; border-top: 1px solid #A6192E; margin: 4px 0;">
+          <p style="font-size: 11px; margin-top: 8px;">
+            Your selection is <b>${areaSqMiles.toFixed(1)} sq miles</b>.<br><br>
+            Please limit selections to <b>${MAX_AREA} sq miles</b> to prevent the server from timing out.
+          </p>
+        </div>
+      `)
+      .openOn(map);
+      if (activeToolType === 'polygon') currentDrawHandler.enable();
+    if (activeToolType === 'polygon') {
+      setTimeout(() => { if (currentDrawHandler) currentDrawHandler.enable(); }, 100);
+    }
+    return;
+}
+      const contourTilePromise = new Promise(res => {
+      if (!staticContourIndex) { res([]); return; }
+      const userPoly = layer.toGeoJSON();
+      // Look through the 286 individual features in the grid
+      const intersected = staticContourIndex.features.filter(gridCell => {
+        try {
+          return turf.booleanIntersects(userPoly, gridCell);
+        } catch (e) {
+          return false;
+        }
+      });
+      res(intersected);
+    });
+
+  // If it passes the check, proceed with your existing code
+  const shapeJson = layer.toGeoJSON();
+  const bounds = layer.getBounds();
+  spinner.style.display = 'block';
+
+  const samples = [
+    bounds.getCenter(),
+    bounds.getNorthWest(),
+    bounds.getNorthEast(),
+    bounds.getSouthWest(),
+    bounds.getSouthEast()
+  ];
+
+  // Start with the County Query
+  lidarIndexLayer.query().intersects(shapeJson).run(async function (error, featureCollection) {
+    
+    if (error || !featureCollection || featureCollection.features.length === 0) {
+      spinner.style.display = 'none';
+      L.popup().setLatLng(bounds.getCenter()).setContent('<div style="color: #A6192E; font-weight: bold;">Outside MN Coverage</div>').openOn(map);
+    if (activeToolType === 'polygon') {
+      setTimeout(() => { if (currentDrawHandler) currentDrawHandler.enable(); }, 100);
+    }
+    return; 
+}
+if (activeToolType === 'polygon') {
+  setTimeout(() => { if (currentDrawHandler) currentDrawHandler.enable(); }, 100);
+}
+    // Prepare Parallel Data Fetching
+    // 2nd Gen Sampling
+    const samplePromises = samples.map(latlng => {
+      return new Promise(res => {
+        L.esri.identifyImage({ url: demLayer.options.url }).at([latlng.lat, latlng.lng]).run((err, result) => {
+          const val = result?.pixel?.properties?.value;
+          res(val && val !== "NoData");
+        });
+      });
+    });
+
+    // USGS Fetch
+    const usgsPromise = fetchUSGSPointCloud(shapeJson, activeAbortController.signal);
+
+    // DNR 1st Gen Tile Index Fetch (Wrapped in a Promise)
+    const tilePromise = new Promise(res => {
+  if (!staticTileIndex) {
+    console.warn("Tile index not yet loaded.");
+    res([]);
+    return;
+  }
+
+  // Use Turf.js to find intersections locally
+  const userPoly = layer.toGeoJSON();
+  const matchedTiles = staticTileIndex.features.filter(feature => {
+    try {
+      // booleanIntersects is very efficient for these types of grids
+      return turf.booleanIntersects(userPoly, feature);
+    } catch (e) {
+      return false;
+    }
+  });
+
+  res(matchedTiles);
+});
+
+    // Wait for everything to finish
+    const [sampleResults, usgsItems, tileFeatures, contourFeatures] = await Promise.all([
+      Promise.all(samplePromises),
+      usgsPromise,
+      tilePromise,
+      contourTilePromise 
+    ]);
+
+    if (thisRequestId !== currentRequestId) return;
+
+    spinner.style.display = 'none';
+    window.activeBlobUrls = window.activeBlobUrls || [];
+
+    const validCount = sampleResults.filter(v => v === true).length;
+    const hasFullCoverage = validCount === sampleResults.length;
+    const hasPartialCoverage = validCount > 0 && validCount < sampleResults.length;
+
+// --- BUILD POPUP CONTENT ---
+    let content = `<div class="elev-popup" style="max-height:400px; width:280px; overflow-y:auto; padding-right:5px;">
+      <div class="popup-title">Lidar Data Access and Downloads</div>
+      <hr style="border: none; border-top: 1px solid #78BE21; margin: 4px 0;">`;
+
+// --- MN 2ND GEN / VRT SECTION ---
+const vrtUrl = "https://stacbrowser.gis.data.mn.gov/collections/minnesota-virtual-raster-tile/items/2nd_Generation_Seamless_Lidar_DEM";
+
+if (hasFullCoverage || hasPartialCoverage) {
+    const label = hasFullCoverage ? "Minnesota 2nd Gen Data (2021-2024)" : "Partial Minnesota 2nd Gen (2021-2024)";
+
+    const gen2Txt = `MN DNR 2nd Generation Seamless Lidar Derived Data\n` +
+                    `-------------------------------------------\n` +
+                    `Minnesota Seamless 0.5m DEM (Esri Image Service): https://enterprise.gisdata.mn.gov/agsimg/rest/services/MnTopo/2nd_Generation_Seamless_Lidar_DEM/ImageServer\n` +
+                    `-------------------------------------------\n` +
+                    `Minnesota Seamless 0.5m DEM VRT (Virtual Raster Tile): https://g46prsaddst01.blob.core.windows.net/mntopo/dem_100k/2nd_Generation_Seamless_Lidar_DEM.vrt\n` +
+                    `-------------------------------------------\n` +
+                    `Metadata: https://resources.gisdata.mn.gov/pub/gdrs/data/pub/us_mn_state_mngeo/elev_lidar_statewide_gen2/metadata/metadata.xml\n` +
+                    `-------------------------------------------\n` +
+                    `MnGeo STAC (SpatioTemporal Asset Catalog): https://stacbrowser.gis.data.mn.gov/\n` +
+                    `-------------------------------------------\n` +
+                    `Guide to Adding State of Minnesota’s Lidar Derived Data to Desktop Mapping Applications\n` +
+                    `-------------------------------------------\n` +
+                    `Tutorial: https://${window.location.hostname}/help-page/site/access/\n` +
+                    `-------------------------------------------\n` +
+                    `How to Video: https://${window.location.hostname}/help-page/site/video-tutorials/`;
+
+    const gen2Blob = new Blob([gen2Txt], { type: 'text/plain' });
+    const gen2FileUrl = URL.createObjectURL(gen2Blob);
+    window.activeBlobUrls.push(gen2FileUrl);
+
+    content += `<div style="margin-bottom:10px;">
+        <b>${label}</b>
+        
+        <a href="${gen2FileUrl}" download="MN_2ndGen_Resource_Links.txt" 
+           style="display: block; text-align: center; margin: 8px 0; padding: 6px; background: #003865; color: white; text-decoration: none; border-radius: 4px; font-size: 11px; font-weight: bold;">
+          <i class="fa-solid fa-file-lines"></i> Download 2nd Gen Lidar Data Links
+        </a>
+
+        <a href="${vrtUrl}" target="_blank" 
+           style="display: block; text-align: center; margin: 0 0 8px 0; padding: 6px; background: #003865; color: white; text-decoration: none; border-radius: 4px; font-size: 11px; font-weight: bold;">
+          <i class="fa-solid fa-layer-group"></i> Access Lidar Data via STAC
+        </a>
+
+        <div style="margin-top: 5px;">
+          <a href="https://${window.location.hostname}/help-page/site/access/" target="_blank" 
+             style="display: block; font-size: 11px; color: #003865; text-decoration: underline;">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>   How to add 2nd Gen Lidar data to ArcPro or QGIS
+          </a>
+        </div>
+      </div>`;
+    }else {
+    content += `<div style="margin-bottom:10px;">
+        <b style="font-size: 12px; color: #A6192E;"><i class="fa-solid fa-circle-exclamation"></i> No 2nd Gen data available in this area</b>
+    </div>`;
+}
+
+// --- UNIFIED MN 1ST GEN SECTION (2008-2012) ---
+const formatCounty = (name) => {
+  if (!name) return 'unknown';
+  return name.toLowerCase().replace(/\s+/g, '').replace(/\./g, '').replace('saint', 'st');
+};
+
+content += `<div style="margin-top:10px; padding-top:10px; border-top: 2px solid #00264c; margin-bottom:10px;">
+    <b>1st Gen Data (2008-2012) within selected area</b>`;
+
+// Check for LiDAR Tiles (GDB/LAZ)
+if (tileFeatures && tileFeatures.length > 0) {
+    let tileTxt = `MN DNR 1st Gen LiDAR - Direct Geodatabase Links\n` +
+                  `For bulk downloads, we recommend using the uGet Download Manager.\n` +
+                  `Generated on ${new Date().toLocaleString().replace(',', ' -')}\n` +
+                  `Tiles Found: ${tileFeatures.length}\n` +
+                  `-------------------------------------------\n\n`;
+
+    tileFeatures.forEach(t => {
+        const id = t.properties.dnr_qqq_id || t.properties.DNR_QQQ_ID;
+        const rawC = t.properties.co_name;
+        const finalCounty = rawC || (featureCollection.features[0] ? featureCollection.features[0].properties.co_name : 'unknown');
+
+        if (id) {
+            const cPath = formatCounty(finalCounty);
+            const gdbUrl = `https://resources.gisdata.mn.gov/pub/data/elevation/lidar/county/${cPath}/geodatabase/${id}.gdb.zip`;
+            const lazUrl = `https://resources.gisdata.mn.gov/pub/data/elevation/lidar/county/${cPath}/laz/${id}.laz`;
+            tileTxt += `${gdbUrl}\n${lazUrl}\n`;
+        }
+    });
+
+    const tileBlob = new Blob([tileTxt], { type: 'text/plain' });
+    const tileUrl = URL.createObjectURL(tileBlob);
+    window.activeBlobUrls.push(tileUrl);
+
+    content += `<p style="font-size: 11px; margin: 4px 0;">Found <b>${tileFeatures.length}</b> lidar tiles.</p>
+    <a href="${tileUrl}" download="MN_1stGen_Tile_Links.txt" 
+       style="display: block; text-align: center; margin-bottom: 8px; padding: 6px; background: #003865; color: white; text-decoration: none; border-radius: 4px; font-size: 11px; font-weight: bold;">
+      <i class="fa-solid fa-file-lines"></i> Download 1st Gen Lidar Data Links
+    </a>`;
+}
+
+// Check for 2ft Contours (.shp)
+if (contourFeatures && contourFeatures.length > 0) {
+    let contourTxt = `MN DNR 1st Gen 2ft Contours - Shapefile Links\n` +
+                  `For bulk downloads, we recommend using the uGet Download Manager.\n` +
+                  `Generated on ${new Date().toLocaleString()}\n` +
+                  `10k tiles found: ${contourFeatures.length}\n` +
+                  `-------------------------------------------\n\n`;
+
+    contourFeatures.forEach(t => {
+        const k10 = t.properties.k10 || t.properties.K10 || t.properties.TILE_NAME; 
+        if (k10) {
+            const shpUrl = `https://g46prsaddst01.blob.core.windows.net/mntopo/shp/${k10}_1stGen_2ft_Contours.zip`;
+            contourTxt += `${shpUrl}\n`;
+        }
+    });
+
+    const contourBlob = new Blob([contourTxt], { type: 'text/plain' });
+    const contourUrl = URL.createObjectURL(contourBlob);
+    window.activeBlobUrls.push(contourUrl);
+
+    content += `<p style="font-size: 11px; margin: 4px 0;">Found <b>${contourFeatures.length}</b> contour 10k tiles.</p>
+    <a href="${contourUrl}" download="MN_1stGen_2ft_Contour_Links.txt" 
+       style="display: block; text-align: center; margin-top: 5px; padding: 6px; background: #003865; color: white; text-decoration: none; border-radius: 4px; font-size: 11px; font-weight: bold;">
+      <i class="fa-solid fa-file-lines"></i> Download 1st Gen Contour Shapefile Links
+    </a>`;
+}
+
+// If neither exist
+if ((!tileFeatures || tileFeatures.length === 0) && (!contourFeatures || contourFeatures.length === 0)) {
+    content += `<p style="font-size: 11px; color: #666; margin-top: 5px;">No 1st Gen tiles found in this selection.</p>`;
+}
+
+content += `</div>`;
+
+    // --- USGS SECTION ---
+    if (usgsItems === null) {
+  // Scenario 3: FETCH FAILED (Error/Timeout)
+  content += `<div style="margin-top:10px; padding-top:10px; border-top: 2px solid #A6192E;">
+    <b style="color: #A6192E;"><i class="fa-solid fa-circle-exclamation"></i> USGS Data Timeout</b><br>
+    <p style="font-size: 11px; margin: 5px 0; color: #444;">
+      Failed to grab USGS data after multiple attempts. The federal server may be limiting requests.
+    </p>
+    <a href="https://apps.nationalmap.gov/downloader/" target="_blank" 
+       style="display: block; margin-top: 5px; font-size: 11px; color: #003865; font-weight: bold; text-decoration: underline;">
+      <i class="fa-solid fa-arrow-up-right-from-square"></i> Try the National Map Downloader
+    </a>
+  </div>`;
+} 
+else if (usgsItems.length > 0) {
+      const validItems = usgsItems.filter(item => item.downloadURL || item.url);
+      const eraNew = []; 
+      const eraOld = [];
+
+      validItems.forEach(item => {
+    const url = item.downloadURL || item.url || "";
+    const title = item.title || "";
+    const pubDate = item.publicationDate || "";
+
+    // Regex to find a 4-digit year starting with 19 or 20
+    // \b ensures we don't catch parts of longer numbers (like coordinates)
+    const yearRegex = /\b(19|20)\d{2}\b/;
+
+    let year = 0;
+
+    // Check the URL first (Most reliable for USGS project names: e.g., "...2008...")
+    const urlMatch = url.match(yearRegex);
+    // Check the Title (e.g., "Minnesota Driftless 2021")
+    const titleMatch = title.match(yearRegex);
+    // Fallback to Publication Date
+    const pubMatch = pubDate.match(yearRegex);
+
+    if (urlMatch) {
+        year = parseInt(urlMatch[0]);
+    } else if (titleMatch) {
+        year = parseInt(titleMatch[0]);
+    } else if (pubMatch) {
+        year = parseInt(pubMatch[0]);
+    }
+
+    // Sort into buckets
+    if (year >= 2020) {
+        eraNew.push(item);
+    } else {
+        eraOld.push(item);
+    }
+});
+
+const buildUsgsList = (items, label) => {
+    let h = `USGS 3DEP Lidar - ${label}\n` +
+            `For bulk downloads, we recommend using the uGet Download Manager. Instructions:- https://apps.nationalmap.gov/uget-instructions/\n` +
+            `Generated on ${new Date().toLocaleString().replace(',', ' -')}\n` +
+            `Files Found: ${items.length}\n` +
+            `-------------------------------------------\n\n`;
+    return h + items.map(i => i.downloadURL || i.url).join('\n');
+};
+
+      content += `<div style="margin-top:10px; padding-top:10px; border-top: 2px solid #00264c;">
+                    <b style="color: #003865;">USGS 3DEP Point Clouds within selected area</b>`;
+
+      if (eraNew.length > 0) {
+        const b = new Blob([buildUsgsList(eraNew, "2020+ Data")], { type: 'text/plain' });
+        const u = URL.createObjectURL(b);
+        window.activeBlobUrls.push(u);
+        content += `<p style="font-size: 11px; margin: 8px 0 4px 0;">Found <b>${eraNew.length}</b> LAZ files (2020+):</p>
+          <a href="${u}" download="USGS_Lidar_2020_Present.txt" style="display: block; text-align: center; padding: 6px; background: #003865; color: white; text-decoration: none; border-radius: 4px; font-size: 11px; font-weight: bold;">
+          <i class="fa-solid fa-file-lines"></i> Download 2nd Gen LAZ Data Links</a>`;
+      }
+      if (eraOld.length > 0) {
+        const b = new Blob([buildUsgsList(eraOld, "Pre-2020 Data")], { type: 'text/plain' });
+        const u = URL.createObjectURL(b);
+        window.activeBlobUrls.push(u);
+        content += `<p style="font-size: 11px; margin: 12px 0 4px 0;">Found <b>${eraOld.length}</b> LAZ files (Pre-2020):</p>
+          <a href="${u}" download="USGS_Lidar_2019_Older.txt" style="display: block; text-align: center; padding: 6px; background: #003865; color: white; text-decoration: none; border-radius: 4px; font-size: 11px; font-weight: bold;">
+          <i class="fa-solid fa-file-lines"></i> Download 1st Gen LAZ Data Links</a>`;
+      }
+      content += `</div>`;
+    }
+
+    content += `</div>`;
+
+    L.popup().setLatLng(bounds.getCenter()).setContent(content).openOn(map);
+
+    // --- POPUP CLEANUP ---
+    map.once('popupclose', function () {
+      drawnItems.clearLayers();
+      if (window.activeBlobUrls) {
+        window.activeBlobUrls.forEach(url => URL.revokeObjectURL(url));
+        window.activeBlobUrls = [];
+      }
+    });
+  });
+}
+
+// --- Logic for LINE (Polyline) ---
+if (layer instanceof L.Polyline) {
+  const latlngs = layer.getLatLngs();
+  currentProfileLine = layer;
+  const numPoints = 101; 
+  const points = interpolateFixedPoints(latlngs, numPoints); 
+
+  spinner.style.display = 'block';
+
+  const fetchGetSamples = (url, pointData, callback) => {
+    const esriPoints = pointData.map(p => [p[1], p[0]]); // [lon, lat]
+
+    L.esri.request(url + '/getSamples', {
+      geometry: JSON.stringify({
+        points: esriPoints,
+        spatialReference: { wkid: 4326 }
+      }),
+      geometryType: 'esriGeometryMultipoint',
+      returnFirstValueOnly: true,
+      f: 'json'
+    }, (err, response) => {
+      if (err || !response || !response.samples) {
+        callback(pointData.map(p => ({ dist: p[2], elev: null, lat: p[0], lon: p[1] })));
+        return;
+      }
+
+      // SPATIAL MATCHING:
+      const results = pointData.map((pt) => {
+        const ptLat = pt[0];
+        const ptLon = pt[1];
+
+        // Find the sample in the response that matches this coordinate
+        // We use a small tolerance (0.0001) for float comparison
+        const match = response.samples.find(s => {
+            return Math.abs(s.location.y - ptLat) < 0.0001 && 
+                   Math.abs(s.location.x - ptLon) < 0.0001;
+        });
+
+        const val = match ? match.value : "NoData";
+        let cleanElev = null;
+
+        if (val !== "NoData" && val !== null && val !== undefined) {
+          const num = parseFloat(val);
+          if (!isNaN(num) && num > -9000) cleanElev = num;
+        }
+
+        return {
+          dist: pt[2],
+          elev: cleanElev,
+          lat: ptLat,
+          lon: ptLon
+        };
+      });
+
+      callback(results);
+    });
+  };
+
+  let completed = 0;
+  fetchGetSamples(demLayer.options.url, points, (res) => {
+    if (thisRequestId !== currentRequestId) return;
+    window.lastElevations2ndGen = res;
+    if (++completed === 2) finalizeLine();
+  });
+
+  fetchGetSamples(demLayer1stGenImageServer, points, (res) => {
+    if (thisRequestId !== currentRequestId) return;
+    window.lastElevations1stGen = res;
+    if (++completed === 2) finalizeLine();
+  });
+
+  function finalizeLine() {
+    spinner.style.display = 'none';
+    showProfileChart(); 
+    refreshProfileRoadCrossings();
+    if (activeToolType === 'polyline') setTimeout(() => { if (currentDrawHandler) currentDrawHandler.enable(); }, 100);
+  }
+}
+});
+
+// --- ELEVATION CHART RENDERING ---
+function showProfileChart(chartTitleOverride = null) {
+  const selectedGen = document.querySelector('input[name="gen-source"]:checked')?.value || "2";
+  const elevations = (selectedGen === "2") ? window.lastElevations2ndGen : window.lastElevations1stGen;
+  const isMobile = window.innerWidth < 768;
+  
+  if (!elevations || elevations.length === 0) {
+      if (window.elevChart) window.elevChart.destroy();
+      return;
+  }
+
+  profilePanel.classList.add('visible');
+  profilePanel.setAttribute('aria-hidden', 'false');
+
+  const useFeet = currentUnits === 'ft';
+  // Use 1st Gen to determine the absolute max distance of the line
+  const totalDistanceMeters = window.lastElevations1stGen[window.lastElevations1stGen.length - 1].dist;
+
+  let distUnit, distConv;
+  if (useFeet) {
+    if (totalDistanceMeters * 3.28084 > 5280) { distUnit = 'mi'; distConv = m => m * 0.000621371; }
+    else { distUnit = 'ft'; distConv = m => m * 3.28084; }
+  } else {
+    if (totalDistanceMeters > 1000) { distUnit = 'km'; distConv = m => m / 1000; }
+    else { distUnit = 'm'; distConv = m => m; }
+  }
+
+  // BUILD XY DATA OBJECTS
+  const chartPoints = elevations.map(e => ({
+    x: distConv(e.dist),
+    y: (e.elev === null) ? null : (useFeet ? e.elev * 3.28084 : e.elev)
+  }));
+
+  const is1stGen = (selectedGen === "1");
+  const themeColor = is1stGen ? '#A6192E' : '#003865'; 
+  const titleText = chartTitleOverride || (is1stGen ? "Elevation Profile - 1st Gen (1m)" : "Elevation Profile - 2nd Gen (0.5m)");
+
+  const ctx = document.getElementById('elevationChart').getContext('2d');
+  if (window.elevChart) window.elevChart.destroy();
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+  gradient.addColorStop(0, is1stGen ? 'rgba(166, 25, 46, 0.5)' : 'rgba(0, 56, 101, 0.5)');
+  gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+  window.elevChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        label: useFeet ? 'Elevation (ft)' : 'Elevation (m)',
+        data: chartPoints, // Using XY objects
+        fill: true,
+        borderColor: themeColor,
+        backgroundColor: gradient,
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: 0.1,
+        spanGaps: false 
+      }]
+    },
+    plugins: [profileRoadCrossingPlugin],
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { 
+          type: 'linear', // Required for XY data
+          min: 0,
+          max: distConv(totalDistanceMeters), // Lock the width
+          title: { display: true, text: `Distance (${distUnit})`, color: themeColor },
+          ticks: {
+            callback: (val) => val.toFixed(distUnit === 'mi' || distUnit === 'km' ? 1 : 0)
+          }
+        },
+        y: { 
+          title: { display: true, text: useFeet ? 'Elevation (ft)' : 'Elevation (m)', color: themeColor } 
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: titleText,
+          color: themeColor,
+          font: { size: 16, weight: 'bold' }
+        }
+      }
+    }
+  });
+}
+
+// --- GLOBAL UI LISTENERS ---
+// Mobile swipe-to-close logic
+const panelElement = document.getElementById('profile-panel');
+let swipeStartY = 0;
+if (panelElement) {
+    panelElement.addEventListener('touchstart', e => {
+        swipeStartY = e.touches[0].clientY;
+    }, {passive: true});
+
+    panelElement.addEventListener('touchend', e => {
+        const endY = e.changedTouches[0].clientY;
+        if (endY - swipeStartY > 80) resetMapDrawing();
+    }, {passive: true});
+}
+
+// Handles redraw for both Metric/Imperial and 1st/2nd Gen toggles
+document.querySelectorAll('input[name="units"], input[name="gen-source"]').forEach(input => {
+  input.addEventListener('change', e => {
+    if (e.target.name === 'units') currentUnits = e.target.value;
+    showProfileChart(); 
+  });
+});
+document.getElementById('show-road-crossings').addEventListener('change', refreshProfileRoadCrossings);
+// CSV Export Logic
+function exportToCSV(elevations, filename) {
+  if (!elevations || elevations.filter(e => e && e.elev !== null).length === 0) {
+    alert("No data available to export. Draw a line first!");
+    return;
+  }
+  let csv = "Distance_m,Distance_ft,Elevation_m,Elevation_ft,Latitude,Longitude,Easting_m,Northing_m\n";
+  elevations.filter(e => e && e.elev !== null).forEach(e => {
+    const utm = latLngToUTM15({ lat: e.lat, lng: e.lon });
+    csv += [
+      e.dist.toFixed(2), (e.dist * 3.28084).toFixed(2),
+      e.elev.toFixed(2), (e.elev * 3.28084).toFixed(2),
+      e.lat.toFixed(5), e.lon.toFixed(5),
+      utm ? utm.easting.toFixed(2) : "", utm ? utm.northing.toFixed(2) : ""
+    ].join(",") + "\n";
+  });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  link.download = filename;
+  link.click();
+}
+
+document.getElementById('export-btn-2nd').onclick = () => exportToCSV(window.lastElevations2ndGen, "2ndGen_Profile.csv");
+document.getElementById('export-btn-1st').onclick = () => exportToCSV(window.lastElevations1stGen, "1stGen_Profile.csv");
+
+// Final reset and cleanup logic
+function resetMapDrawing() {
+  map.closePopup();
+  if (currentDrawHandler) currentDrawHandler.disable();
+  activeToolType = null; 
+  document.querySelectorAll('.zoom-to-mn').forEach(btn => btn.classList.remove('active-tool'));
+  drawnItems.clearLayers();
+  if (customMarker) { map.removeLayer(customMarker); customMarker = null; }
+  profilePanel.classList.remove('visible');
+  if (spinner) spinner.style.display = 'none';
+  if (activeAbortController) activeAbortController.abort();
+  profileRoadQueryId += 1;
+  currentProfileLine = null;
+  clearProfileRoadCrossings();
+  window.lastElevations2ndGen = null;
+  window.lastElevations1stGen = null;
+  if (window.elevChart) { window.elevChart.destroy(); window.elevChart = null; }
+}
+
+document.getElementById('close-profile').onclick = () => resetMapDrawing();
+
+// --- INITIALIZATION ---
+refreshElevationLegend();
+map.on('movestart', function() {
+  if (window.innerWidth < 768) layerControl.collapse();
+});
+
+// Fix for Leaflet calculation bug when reopening
+layerControl.on('expand', function() {
+    const container = layerControl.getContainer();
+    // Force a height reset
+    container.style.height = 'auto';
+    
+    // Optional: Scroll to top when opening
+    container.scrollTop = 0;
+});
+
+// Close panel on mobile move
+map.on('movestart', function() {
+  if (window.innerWidth < 768) {
+    layerControl.collapse();
+  }
+});
+// Generation Toggle Listener
+document.querySelectorAll('input[name="units"], input[name="gen-source"]').forEach(input => {
+  input.addEventListener('change', e => {
+    // Update the unit state if it was a unit button
+    if (e.target.name === 'units') {
+      currentUnits = e.target.value;
+    }
+    // Redraw the chart immediately
+    showProfileChart(); 
+  });
+});
+
+// CSV Export Logic
+function exportCSV(elevations, filename) {
+  if (!elevations || elevations.length === 0) return alert("No data available to export. Draw a line first!");
+  let csv = "Distance_m,Distance_ft,Elevation_m,Elevation_ft,Latitude,Longitude,Easting_m,Northing_m\n";
+
+  elevations.filter(e => e && e.elev !== null).forEach(e => {
+    const utm = latLngToUTM15({ lat: e.lat, lng: e.lon });
+    csv += [
+      e.dist.toFixed(2), (e.dist * 3.28084).toFixed(2),
+      e.elev.toFixed(2), (e.elev * 3.28084).toFixed(2),
+      e.lat.toFixed(5), e.lon.toFixed(5),
+      utm ? utm.easting.toFixed(2) : "", utm ? utm.northing.toFixed(2) : ""
+    ].join(",") + "\n";
+  });
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  link.download = filename;
+  link.click();
+}
+
+document.getElementById('export-btn-2nd').onclick = () => exportCSV(window.lastElevations2ndGen, "2ndGen_Elevation_Profile.csv");
+document.getElementById('export-btn-1st').onclick = () => exportCSV(window.lastElevations1stGen, "1stGen_Elevation_Profile.csv");
+
+// Final Reset Logic
+function resetMapDrawing() {
+  map.closePopup();
+  if (currentDrawHandler) currentDrawHandler.disable();
+  activeToolType = null; 
+  document.querySelectorAll('.zoom-to-mn').forEach(btn => btn.classList.remove('active-tool'));
+  drawnItems.clearLayers();
+  if (customMarker) { map.removeLayer(customMarker); customMarker = null; }
+  profilePanel.classList.remove('visible');
+  if (spinner) spinner.style.display = 'none';
+  if (activeAbortController) activeAbortController.abort();
+
+  window.lastElevations2ndGen = null;
+  window.lastElevations1stGen = null;
+  if (window.elevChart) {
+    window.elevChart.destroy();
+    window.elevChart = null;
+  }
+}
+
+// Initial Legened Check
+refreshElevationLegend();

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<!-- saved from url=(0031)https://mntopo.gis.data.mn.gov/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>MnTopo 2</title>
+  <link rel="icon" href="./MnTopo 2_files/MN-Icon-800x800_tcm38-542945.png" type="image/png">
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="./MnTopo 2_files/leaflet.css">
+  <script src="./MnTopo 2_files/leaflet.js.download"></script>
+
+  <!-- Leaflet Draw CSS & JS -->
+  <link rel="stylesheet" href="./MnTopo 2_files/leaflet.draw.css">
+  <script src="./MnTopo 2_files/leaflet.draw.js.download"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+
+  <!-- Esri Leaflet Core -->
+  <script src="./MnTopo 2_files/esri-leaflet.js.download"></script>
+
+  <!-- Esri Leaflet Geocoder -->
+  <link rel="stylesheet" href="./MnTopo 2_files/esri-leaflet-geocoder.css">
+  <script src="./MnTopo 2_files/esri-leaflet-geocoder.js.download"></script>
+
+  <!-- Esri Leaflet Vector -->
+  <script src="./MnTopo 2_files/esri-leaflet-vector.js.download"></script>
+
+  <!-- Chart.js -->
+  <script src="./MnTopo 2_files/chart.umd.min.js.download"></script>
+
+  <!-- Proj4 -->
+  <script src="./MnTopo 2_files/proj4.js.download"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./MnTopo 2_files/index.css">
+  
+  <!-- Turf.js -->
+  <script src="./MnTopo 2_files/turf.min.js.download"></script>
+
+  <!-- Layer Opacity Control -->
+  <link rel="stylesheet" href="./MnTopo 2_files/L.Control.Opacity.css">
+  <script src="./MnTopo 2_files/L.Control.Opacity.js.download"></script>
+  <style>
+    .leaflet-draw-toolbar a {
+      background-image: url('https://unpkg.com/leaflet-draw@1.0.4/dist/images/spritesheet.png');
+    }
+    .leaflet-retina .leaflet-draw-toolbar a {
+      background-image: url('https://unpkg.com/leaflet-draw@1.0.4/dist/images/spritesheet-2x.png');
+    }
+    .geocoder-control-input {
+      background-image: url('https://unpkg.com/esri-leaflet-geocoder@3.1.4/dist/img/search.png');
+    }
+    .geocoder-control-input-disabled {
+      background-image: url('https://unpkg.com/esri-leaflet-geocoder@3.1.4/dist/img/search-disabled.png');
+    }
+    .geocoder-control-input.geocoder-control-loading {
+      background-image: url('https://unpkg.com/esri-leaflet-geocoder@3.1.4/dist/img/loading.gif');
+    }
+  </style>
+<style type="text/css">.esri-truncated-attribution:hover {white-space: normal;}</style><style type="text/css">.esri-truncated-attribution {vertical-align: -3px;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;display: inline-block;transition: 0s white-space;transition-delay: 1s;max-width: 1304px;}</style><link type="text/css" rel="stylesheet" href="chrome-extension://dagdlcijhfbmgkjokkjicnnfimlebcll/style.css"><script type="text/javascript" charset="utf-8" src="chrome-extension://dagdlcijhfbmgkjokkjicnnfimlebcll/page_context.js"></script></head>
+
+<body screen_capture_injected="true">
+  <!-- Title Bar -->
+  <header id="title-bar" role="banner">
+    <img id="mn-logo" src="./MnTopo 2_files/MN-Icon-800x800_tcm38-542945.png" alt="Minnesota Logo for MnTopo">
+    <h1>MnTopo 2</h1>
+    <div class="button-container">
+    <button id="info-btn" aria-label="Open MnTopo 2 Info Page in new tab" title="MnTopo 2 Info Page" onclick="window.open(&#39;help-page/site/index/&#39;,&#39;_self&#39;)">
+      FAQ
+    </button>
+     <button id="disc-btn" aria-label="Open MnTopo disclaimer in the same tab" title="MnTopo Disclaimer" onclick="window.open(&#39;help-page/site/disclaimer/&#39;,&#39;_self&#39;)">
+     Disclaimer
+    </button> 
+    </div>
+  </header>
+
+  <!-- Map -->
+  <main>
+    <div id="map" aria-label="Interactive map showing Minnesota elevation data" role="application" class="leaflet-container leaflet-touch leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" tabindex="0" style="position: relative;"><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(0px, 0px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer " style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 18; transform: translate3d(0px, 0px, 0px) scale(1);"><img alt="" src="./MnTopo 2_files/44.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(532px, 91px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/45.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(532px, 347px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/44(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(276px, 91px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/44(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(788px, 91px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/45(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(276px, 347px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/45(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(788px, 347px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/43.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(532px, -165px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/46.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(532px, 603px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/43(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(276px, -165px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/43(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(788px, -165px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/46(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(276px, 603px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/46(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(788px, 603px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/44(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(20px, 91px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/44(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1044px, 91px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/45(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(20px, 347px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/45(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1044px, 347px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/43(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(20px, -165px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/43(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1044px, -165px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/46(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(20px, 603px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/46(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1044px, 603px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/44(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-236px, 91px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/44(6).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1300px, 91px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/45(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-236px, 347px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/45(6).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1300px, 347px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/43(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-236px, -165px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/43(6).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1300px, -165px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/46(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-236px, 603px, 0px); opacity: 1;"><img alt="" src="./MnTopo 2_files/46(6).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1300px, 603px, 0px); opacity: 1;"></div></div><div class="leaflet-gl-layer maplibregl-map" style="width: 1630.8px; height: 1005.6px; transform: translate3d(-135.9px, -83.8px, 0px);"><div class="maplibregl-canvas-container"><canvas class="maplibregl-canvas leaflet-image-layer leaflet-zoom-animated" tabindex="-1" aria-label="Map" role="region" width="1631" height="1006" style="width: 1631px; height: 1006px;"></canvas></div><div class="maplibregl-control-container"><div class="maplibregl-ctrl-top-left "></div><div class="maplibregl-ctrl-top-right "></div><div class="maplibregl-ctrl-bottom-left "></div><div class="maplibregl-ctrl-bottom-right "></div></div></div></div><div class="leaflet-pane leaflet-overlay-pane"><img class="leaflet-image-layer leaflet-zoom-animated" crossorigin="" src="./MnTopo 2_files/exportImage" alt="" style="z-index: 6; opacity: 0.65; transform: translate3d(0px, 0px, 0px); width: 1359px; height: 838px;"></div><div class="leaflet-pane leaflet-shadow-pane"></div><div class="leaflet-pane leaflet-marker-pane"></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated"></div><div class="leaflet-pane leaflet-vector-pane" style="z-index: 500;"></div><div class="leaflet-pane leaflet-hillshadeDown-pane" style="z-index: 300;"></div><div class="leaflet-pane leaflet-dem-pane" style="z-index: 310;"></div><div class="leaflet-pane leaflet-hillshadeUp-pane" style="z-index: 305;"><img class="leaflet-image-layer leaflet-zoom-animated" crossorigin="" src="./MnTopo 2_files/exportImage(1)" alt="" style="z-index: 7; opacity: 1; transform: translate3d(0px, 0px, 0px); width: 1359px; height: 838px;"></div><div class="leaflet-pane leaflet-contour-pane" style="z-index: 510;"></div><div class="leaflet-pane leaflet-pane50ft-pane" style="z-index: 520;"></div><div class="leaflet-pane leaflet-pane10ft-pane" style="z-index: 530;"></div><div class="leaflet-pane leaflet-pane2ft-pane" style="z-index: 540;"></div><div class="leaflet-pane leaflet-fema-pane" style="z-index: 500;"></div><div class="leaflet-pane leaflet-status-pane" style="z-index: 650;"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"><div class="leaflet-control-zoom leaflet-bar leaflet-control"><a class="leaflet-control-zoom-in" href="https://mntopo.gis.data.mn.gov/#" title="Zoom in" role="button" aria-label="Zoom in" aria-disabled="false"><span aria-hidden="true">+</span></a><a class="leaflet-control-zoom-out" href="https://mntopo.gis.data.mn.gov/#" title="Zoom out" role="button" aria-label="Zoom out" aria-disabled="false"><span aria-hidden="true">−</span></a></div><div class="zoom-to-mn leaflet-control" title="Zoom to Minnesota" tabindex="0" aria-label="Zoom to Minnesota" role="button"><i class="fa-solid fa-globe"></i></div><div class="leaflet-draw leaflet-control"><div class="leaflet-draw-section"><ul class="leaflet-draw-actions"></ul></div></div><div class="zoom-to-mn leaflet-control" title="Draw line for elevation profile" tabindex="0" role="button" aria-label="Create elevation profile"><i class="fa-solid fa-chart-line"></i></div><div class="zoom-to-mn leaflet-control" title="Add point for elevation" tabindex="0" role="button" aria-label="Get point elevation"><i class="fa-solid fa-location-dot"></i></div><div class="zoom-to-mn leaflet-control" title="Download Lidar Data (Select Area)" tabindex="0" role="button" aria-label="Select area for download"><i class="fa-solid fa-cloud-arrow-down"></i></div></div><div class="leaflet-top leaflet-right"><div class="geocoder-control leaflet-control"><input class="geocoder-control-input leaflet-bar" title="Location Search" aria-label="Search for a Minnesota location"><div class="geocoder-control-suggestions leaflet-bar"><div class=""></div></div></div><div class="leaflet-control-layers leaflet-control" aria-haspopup="true"><a class="leaflet-control-layers-toggle" href="https://mntopo.gis.data.mn.gov/#" title="Layers" role="button"></a><section class="leaflet-control-layers-list"><div class="leaflet-control-layers-base"><fieldset><legend>Basemaps</legend><label><span><input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers_116" checked="checked"><span> <i class="fa-solid fa-road"></i> Roads</span></span></label><label><span><input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers_116"><span> <i class="fa-solid fa-earth-americas"></i> Imagery</span></span></label></fieldset></div><div class="leaflet-control-layers-separator"></div><div class="leaflet-control-layers-overlays"><fieldset><legend>Map Layers</legend><div class="layer-group-header">
+            <strong>2nd Gen Lidar (2021-2024)</strong>
+            <i class="fa-solid fa-chevron-down toggle-icon"></i>
+          </div><label><span><input type="checkbox" class="leaflet-control-layers-selector"><span> <i class="fa-solid fa-bars-staggered"></i> Contours 2nd Gen (Dynamic)</span></span><div class="layer-color-toggle-wrapper" style="padding-left: 25px; margin-top: 6px; margin-bottom: 4px;"><button class="layer-color-toggle-btn">
+            <span class="color-swatch-circle" style="background: rgb(254,204,52)"></span>
+            <span>Yellow</span>
+          </button></div></label><label><span><input type="checkbox" class="leaflet-control-layers-selector"><span> <i class="fa-solid fa-image"></i> DEM 2nd Gen - 0.5m (Grayscale)</span></span><div class="layer-opacity-container" style="display: flex; align-items: center; gap: 8px; padding-left: 25px; margin-top: 4px;"><i class="fa-solid fa-circle-half-stroke" style="font-size: 10px; color: rgb(102, 102, 102);"></i><input type="range" min="0" max="100" style="width: 70px; height: 6px; cursor: pointer;"><span style="font-size: 10px; min-width: 25px; color: rgb(102, 102, 102);">65%</span></div></label><label><span><input type="checkbox" class="leaflet-control-layers-selector"><span> <i class="fa-solid fa-image"></i> DEM 2nd Gen - 0.5m (Accessible)</span></span><div class="layer-opacity-container" style="display: flex; align-items: center; gap: 8px; padding-left: 25px; margin-top: 4px;"><i class="fa-solid fa-circle-half-stroke" style="font-size: 10px; color: rgb(102, 102, 102);"></i><input type="range" min="0" max="100" style="width: 70px; height: 6px; cursor: pointer;"><span style="font-size: 10px; min-width: 25px; color: rgb(102, 102, 102);">65%</span></div></label><label><span><input type="checkbox" class="leaflet-control-layers-selector" checked=""><span> <i class="fa-solid fa-image"></i> DEM 2nd Gen - 0.5m (Terrain)</span></span><div class="layer-opacity-container" style="display: flex; align-items: center; gap: 8px; padding-left: 25px; margin-top: 4px;"><i class="fa-solid fa-circle-half-stroke" style="font-size: 10px; color: rgb(102, 102, 102);"></i><input type="range" min="0" max="100" style="width: 70px; height: 6px; cursor: pointer;"><span style="font-size: 10px; min-width: 25px; color: rgb(102, 102, 102);">65%</span></div></label><label><span><input type="checkbox" class="leaflet-control-layers-selector" checked=""><span> <i class="fa-solid fa-image"></i> Hillshade 2nd Gen - 0.5m </span></span><div class="layer-opacity-container" style="display: flex; align-items: center; gap: 8px; padding-left: 25px; margin-top: 4px;"><i class="fa-solid fa-circle-half-stroke" style="font-size: 10px; color: rgb(102, 102, 102);"></i><input type="range" min="0" max="100" style="width: 70px; height: 6px; cursor: pointer;"><span style="font-size: 10px; min-width: 25px; color: rgb(102, 102, 102);">100%</span></div></label><label><span><input type="checkbox" class="leaflet-control-layers-selector"><span> <i class="fa-solid fa-draw-polygon"></i> Flight Swaths 2nd Gen</span></span></label><label><span><input type="checkbox" class="leaflet-control-layers-selector"><span> <i class="fa-solid fa-draw-polygon"></i> DEM 2nd Gen Availability</span></span></label><div class="layer-group-header collapsed-group">
+            <strong>1st Gen Lidar (2008-2012)</strong>
+            <i class="fa-solid fa-chevron-right toggle-icon"></i>
+          </div><label style="display: none;"><span><input type="checkbox" class="leaflet-control-layers-selector"><span> <i class="fa-solid fa-bars-staggered"></i> Contours (50 ft) 1st Gen</span></span></label><label style="display: none;"><span><input type="checkbox" class="leaflet-control-layers-selector" disabled=""><span> <i class="fa-solid fa-bars-staggered"></i> Contours (10 ft) 1st Gen</span></span></label><label style="display: none;"><span><input type="checkbox" class="leaflet-control-layers-selector" disabled=""><span> <i class="fa-solid fa-bars-staggered"></i> Contours (2 ft) 1st Gen</span></span></label><label style="display: none;"><span><input type="checkbox" class="leaflet-control-layers-selector"><span> <i class="fa-solid fa-image"></i> DEM 1st Gen - 1m (Color)</span></span><div class="layer-opacity-container" style="display: flex; align-items: center; gap: 8px; padding-left: 25px; margin-top: 4px;"><i class="fa-solid fa-circle-half-stroke" style="font-size: 10px; color: rgb(102, 102, 102);"></i><input type="range" min="0" max="100" style="width: 70px; height: 6px; cursor: pointer;"><span style="font-size: 10px; min-width: 25px; color: rgb(102, 102, 102);">65%</span></div></label><label style="display: none;"><span><input type="checkbox" class="leaflet-control-layers-selector"><span> <i class="fa-solid fa-image"></i> Hillshade 1st Gen - 1m</span></span><div class="layer-opacity-container" style="display: flex; align-items: center; gap: 8px; padding-left: 25px; margin-top: 4px;"><i class="fa-solid fa-circle-half-stroke" style="font-size: 10px; color: rgb(102, 102, 102);"></i><input type="range" min="0" max="100" style="width: 70px; height: 6px; cursor: pointer;"><span style="font-size: 10px; min-width: 25px; color: rgb(102, 102, 102);">100%</span></div></label><label style="display: none;"><span><input type="checkbox" class="leaflet-control-layers-selector"><span> <i class="fa-solid fa-draw-polygon"></i> Flight Lines 1st Gen</span></span></label><label style="display: none;"><span><input type="checkbox" class="leaflet-control-layers-selector"><span> <i class="fa-solid fa-draw-polygon"></i> FEMA Floodplain 1st Gen</span></span></label><div class="layer-group-header collapsed-group">
+            <strong>Reference Data</strong>
+            <i class="fa-solid fa-chevron-right toggle-icon"></i>
+          </div><label style="display: none;"><span><input type="checkbox" class="leaflet-control-layers-selector"><span> <i class="fa-solid fa-draw-polygon"></i> County Boundaries</span></span></label></fieldset></div></section></div></div><div class="leaflet-bottom leaflet-left"><div class="leaflet-control-scale leaflet-control"><div class="leaflet-control-scale-line" style="width: 59px;">50 km</div><div class="leaflet-control-scale-line" style="width: 96px;">50 mi</div></div><div class="custom-scale leaflet-control" style="background: white; padding: 4px 8px; font-size: 12px;">Scale: 4,622,324</div></div><div class="leaflet-bottom leaflet-right"><div class="leaflet-control fema-legend" id="elevation-legend-box"><div class="legend-title">Elevation</div><div style="display: flex; gap: 15px; align-items: flex-end;">
+            <div>
+                <div style="font-size: 9px; font-weight: bold; color: #666; margin-bottom: 4px; text-align: center; max-width: 60px; line-height: 1;">2nd Gen Terrain (0.5m)</div>
+                <div class="elevation-ramp-container">
+                    <div class="elevation-ramp-bar ramp-terrain"></div>
+                    <div class="elevation-ramp-labels">
+                        <span>High</span>
+                        <span>Low</span>
+                    </div>
+                </div>
+            </div>
+        </div></div><div class="leaflet-control-attribution leaflet-control esri-truncated-attribution:hover esri-truncated-attribution"><a href="https://leafletjs.com/" title="A JavaScript library for interactive maps"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" class="leaflet-attribution-flag"><path fill="#4C7BE1" d="M0 0h12v4H0z"></path><path fill="#FFD500" d="M0 4h12v3H0z"></path><path fill="#E0BC00" d="M0 7h12v1H0z"></path></svg> Leaflet</a> <span aria-hidden="true">|</span> © OpenStreetMap contributors, MN DNR, <span class="esri-dynamic-attribution" style="max-width: 1304px;">Powered by <a href="https://www.esri.com/">Esri</a> | City of Bismarck, City of Fargo, City of Moorhead, City of Sioux Falls, Fond du Lac Reservation, Province of Ontario, County of Brown, County of Calumet, County of Dakota, County of Dane, County of Sauk, County of Washington, WI, St. Louis County (MN), Iowa DNR, MN Dept Natural Resources, South Dakota Game Fish and Parks, Esri Canada, TomTom, Garmin, FAO, NOAA, USGS, EPA, NPS, USFWS, NRCan, Parks Canada</span></div></div></div></div>
+  </main>
+
+  <!-- Spinner -->
+  <div id="spinner" role="status" aria-live="polite">Loading...</div>
+
+  <!-- Profile Panel --> *** NEW ***
+<aside id="profile-panel" role="region" aria-label="Elevation profile panel">
+  <button id="close-profile" aria-label="Close elevation profile panel">✕</button>
+  
+  <!-- Profile header controls -->
+  <div class="profile-header-controls">
+    <div class="gen-toggle">
+      <span>Data Source:</span>
+      <label><input type="radio" name="gen-source" value="2" checked=""> 2nd Gen</label>
+      <label><input type="radio" name="gen-source" value="1"> 1st Gen</label>
+    </div>
+
+    <div class="road-toggle">
+      <label><input id="show-road-crossings" type="checkbox"> Show crossing street names</label>
+    </div>
+  </div>
+
+  <div class="chart-container-bottom">
+    <canvas id="elevationChart" aria-label="Elevation profile chart" role="img"></canvas>
+    
+    <div class="profile-actions" style="position: absolute; bottom: 10px; left: 10px; display: flex; gap: 10px;">
+      <button id="export-btn-2nd" class="export-btn" style="position:static;">Export 2nd Gen CSV</button>
+      <button id="export-btn-1st" class="export-btn" style="position:static; background: #A6192E;">Export 1st Gen CSV</button>
+    </div>
+  </div>
+
+  <div class="unit-toggle">
+    <label><input type="radio" name="units" value="m" checked=""> Metric</label>
+    <label><input type="radio" name="units" value="ft"> Imperial</label>
+  </div>
+
+</aside>
+
+  <!-- Custom JS -->
+  <!-- <script src="https://g46drsaddst03.blob.core.windows.net/mntopo/leaflet/index.js"></script> -->
+  <script src="./MnTopo 2_files/sources.js.download"></script>
+  <script src="./MnTopo 2_files/index.js.download"></script>
+
+
+</body></html>

@@ -1,0 +1,860 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: fixed; /* Prevents the whole page from bouncing/shifting on iOS */
+  width: 100%;
+}
+/* Color themes */
+:root {
+  --primary-color: #003865;
+  --accent-color: #78BE21;
+  --marker-red: #003865;
+}
+/* Title Bar */
+#title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* space out logo/title and button */
+  height: 50px;
+  background:var(--primary-color);
+  color: white;
+  font-weight: bold;
+  padding: 0 10px;
+  font-size: 1.5rem;
+  border-bottom: 4px solid var(--accent-color); /* green accent line */
+  font-family: Calibri, sans-serif !important;
+}
+/* Logo */
+#mn-logo {
+  height: 48px;
+  margin-right: 10px;
+}
+/* Keep logo and text aligned */
+#title-bar span {
+  display: flex;
+  align-items: center;
+}
+
+.button-container {
+  display: flex;
+  align-items: center;
+}
+
+/* Info button wrapper */
+#info-btn {
+  border: none;
+  cursor: pointer;
+  background-color: var(--accent-color);
+  padding: 4px 8px;
+  /*border: 2px solid var(--primary-color);*/
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--primary-color);
+  border-radius: 4px;
+  font-family: Calibri, sans-serif !important;
+  margin: 3px;
+}
+/* Disclaimer button wrapper */
+#disc-btn {
+  border: none;
+  cursor: pointer;
+  background-color: var(--accent-color);
+  padding: 4px 8px;
+  /*border: 2px solid var(--primary-color);*/
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--primary-color);
+  border-radius: 4px;
+  font-family: Calibri, sans-serif !important;
+  margin: 3px;
+}
+/* Map */
+#map {
+  width: 100%;
+  height: calc(100vh - 50px); /* Fallback */
+  height: calc(100dvh - 50px); /* Modern fix for iOS Safari */
+}
+/* Spinner */
+#spinner {
+  display: none;
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px;
+  color:var(--primary-color);
+  border-radius: 5px;
+  z-index: 1000;
+  font-weight: bold;
+  font-family: Calibri, sans-serif !important;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+/* Spinner visible */
+#spinner.visible {
+  display: block;
+}
+/* Bottom profile panel */
+#profile-panel {
+  position: fixed;
+  bottom: -260px; /* hidden by default */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 275px;
+  background: white;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  z-index: 1200;
+  transition: bottom 0.28s ease-in-out;
+  overflow: hidden;
+  display: none;
+}
+/* Meters and Feet toggle */
+.profile-header-controls {
+  position: absolute;
+  top: 8px;
+  right: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  color: var(--primary-color);
+  font-size: 13px;
+  font-family: Calibri, sans-serif;
+  z-index: 20;
+}
+.gen-toggle,
+.road-toggle {
+  white-space: nowrap;
+}
+.gen-toggle span {
+  font-weight: bold;
+  margin-right: 5px;
+}
+.gen-toggle label,
+.road-toggle label {
+  cursor: pointer;
+}
+.gen-toggle label + label {
+  margin-left: 10px;
+}
+.gen-toggle input,
+.road-toggle input {
+  margin-right: 4px;
+}
+.unit-toggle {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  font-size: 13px;
+  color: var(--primary-color);
+  font-family: Calibri, sans-serif;
+  z-index: 20;
+}
+.unit-toggle label {
+  margin-right: 10px;
+  cursor: pointer;
+}
+.unit-toggle input {
+  margin-right: 4px;
+}
+.road-toggle {
+  font-size: inherit;
+}
+/* Pannel visible */
+#profile-panel.visible {
+  bottom: 10px;
+  display: block;
+}
+/* Chart container */
+.chart-container-bottom {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+/* Export button inside panel */
+.export-btn {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-family: Calibri, sans-serif !important;
+}
+
+/* Individual Colors by ID */
+#export-btn-2nd {
+  left: 10px;
+  background-color: #003865; /* Blue */
+}
+
+#export-btn-1st {
+  left: 135px; /* Adjust this so they don't overlap */
+  background-color: #A6192E; /* Red */
+}
+
+/* UNIVERSAL HOVER EFFECT */
+.export-btn:hover {
+  filter: brightness(1.2); 
+  opacity: 0.9;
+  cursor: pointer;
+}
+/* Close (X) button */
+#close-profile {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--primary-color);
+  z-index: 10;
+}
+
+#close-profile:hover {
+  color: var(--marker-red);
+  font-weight: bold;
+}
+/* Draw vertices */
+.leaflet-div-icon.leaflet-editing-icon {
+  border-radius: 50% !important;
+  width: 10px !important;
+  height: 10px !important;
+  margin-left: -5px !important;
+  margin-top: -5px !important;
+  background-color: var(--marker-red) !important;
+  border: 1px solid #fff !important;
+}
+/* Custom crosshairs icon */
+.custom-search-icon i {
+  color: var(--marker-red);
+  font-size: 30px;
+  text-shadow: 
+    -1px -1px 0 #fff,  
+     1px -1px 0 #fff,
+    -1px  1px 0 #fff,
+     1px  1px 0 #fff,
+     0px  1px 0 #fff,
+     0px -1px 0 #fff,
+    -1px  0px 0 #fff,
+     1px  0px 0 #fff,
+     1px  1px 3px rgba(0,0,0,0.5);
+  opacity: 1 !important;
+}
+/* Zoom-to-Minnesota button */
+.zoom-to-mn {
+  background-color: white;
+  background-clip: padding-box;
+  /* border: 2px solid var(--primary-color); */
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--primary-color);
+  font-size: 18px;
+  /* box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); */
+}
+
+.zoom-to-mn:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.zoom-to-mn:focus-visible{
+  /* outline: 2px solid var(--primary-color); */
+  outline-offset: 0px;
+  box-shadow: 0 2px 5px rgba(255, 255, 255, 1);
+  /* linear-gradient(
+    to right,
+    var(--primary-color),
+    var(--accent-color)
+  ); */
+}
+/* Style for the custom scale control */
+.custom-scale {
+  background-color: rgba(255, 255, 255, 1);
+  padding: 4px 8px;
+  /* border: 2px solid var(--primary-color); */
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--primary-color);
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+/* Style for the elevation popup text */
+.elev-popup {
+  color: var(--primary-color);
+  font-size: 14px;
+}
+.elev-popup b {
+  font-weight: bold;
+ }
+/* Style for the geolocator popup text */
+.leaflet-popup-content {
+  color: var(--primary-color);
+  font-size: 14px;
+}
+/* Custom marker icon */
+.custom-fa-icon {
+  color: var(--marker-red);
+  font-size: 24px;
+  text-shadow: 
+    -1px -1px 0 #fff,  
+     1px -1px 0 #fff,
+    -1px  1px 0 #fff,
+     1px  1px 0 #fff,
+     0px  1px 0 #fff,
+     0px -1px 0 #fff,
+    -1px  0px 0 #fff,
+     1px  0px 0 #fff,
+     2px  2px 3px rgba(0,0,0,0.3);
+  opacity: 1 !important;
+}
+/* Mobile-friendly profile panel */
+@media (max-width: 768px) {
+  #profile-panel {
+    width: 100% !important;
+    height: 40vh !important; /* Slightly shorter to leave more map visible */
+    bottom: 0;
+  }
+
+  /* Shrink the title bar font on mobile */
+  #title-bar {
+    font-size: 1.1rem;
+    height: 40px;
+  }
+  #mn-logo { height: 35px; }
+
+  /* Reposition and shrink export buttons */
+  .export-btn {
+    padding: 4px 6px !important;
+    font-size: 10px !important;
+    bottom: 5px !important;
+  }
+
+  #export-btn-2nd { left: 5px !important; }
+  #export-btn-1st { left: 110px !important; } /* Move closer to prevent overlap */
+
+  /* Make the unit toggle more compact */
+  .unit-toggle {
+    font-size: 11px;
+    top: 5px;
+    left: 5px;
+  }
+
+  .profile-header-controls {
+    top: 5px;
+    right: 35px;
+    font-size: 11px;
+  }
+
+  .road-toggle {
+    font-size: inherit;
+  }
+
+  /* Make the close button larger for "thumb" tapping */
+  #close-profile {
+    font-size: 22px;
+    top: 2px;
+    right: 5px;
+  }
+}
+/* Chart canvas fills container */
+.chart-container-bottom canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+@media (max-width: 480px) {
+  .export-btn,
+  #close-profile {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+}
+.elev-popup .popup-title {
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 2px;
+}
+#title-bar h1 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0;
+  color: white;
+}
+
+/* Apply Calibri to all Leaflet UI text */
+.leaflet-container,
+.leaflet-control,
+.leaflet-control *:not(i):not(.fa):not(.fas):not(.fa-solid),
+.leaflet-popup-content,
+.leaflet-tooltip,
+.leaflet-bar a,
+.leaflet-bar a span {
+  font-family: Calibri, sans-serif;
+}
+/* Explicitly protect all Font Awesome icons */
+i.fa,
+i.fas,
+i.fa-solid,
+.leaflet-control i {
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 900;
+}
+/* FEMA legend style */
+.fema-legend {
+  background: white;
+  padding: 8px 10px;
+  border-radius: 4px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.3);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.fema-legend .legend-title {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.fema-legend .legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.fema-legend .legend-item:last-child {
+  margin-bottom: 0;
+}
+
+.fema-legend .legend-color {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #999;
+  margin-right: 6px;
+}
+
+.fema-legend .legend-label {
+  white-space: nowrap;
+}
+/* Prevent iOS Zoom on the Esri Geocoder */
+.geocoder-control-input {
+  font-size: 16px !important;
+}
+
+/* Container for the slider and labels */
+.layer-opacity-container {
+    font-family: 'Calibri', sans-serif;
+}
+
+/* Make the slider track look cleaner */
+.layer-opacity-container input[type='range'] {
+    accent-color: #003865; 
+    background: #e0e0e0;
+    border-radius: 5px;
+    appearance: none;
+}
+
+/* Better styling for the FontAwesome icon used in slider */
+.layer-opacity-container i {
+    opacity: 0.7;
+}
+
+/* Ensure the label doesn't wrap */
+.layer-opacity-container span {
+    font-variant-numeric: tabular-nums; /* Prevents text jumping when numbers change */
+}
+/* Create a crisp white outline for the drawn polyline */
+.drawn-line-outline {
+    /* We use multiple drop-shadows to create a "hard" 1px white edge */
+    filter: drop-shadow(1px 0 0 white) 
+            drop-shadow(-1px 0 0 white) 
+            drop-shadow(0 1px 0 white) 
+            drop-shadow(0 -1px 0 white);
+    
+    /* Optional: Improves performance on some browsers */
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+/* Ensure the line stays visible on top of the map */
+path.drawn-line-outline {
+    pointer-events: none;
+}
+/* Add spacing between the search bar and the layer control below it */
+.geocoder-control {
+    margin-bottom: 10px !important;
+    z-index: 1000;
+}
+
+/* Style the search input to match your other buttons */
+.geocoder-control-input {
+    /* border: 2px solid var(--primary-color) !important; */
+    /* border-radius: 6px !important; */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important;
+    font-family: Calibri, sans-serif !important;
+}
+
+/* Style the results list */
+.geocoder-control-suggestions {
+    border: 1px solid var(--primary-color) !important;
+    border-radius: 0 0 6px 6px !important;
+    color: var(--primary-color);
+}
+/* This targets the polygon while you are drawing it and after it is finished */
+.drawn-polygon-outline {
+  /* This creates a crisp white outline around the red stroke */
+  filter: 
+    drop-shadow(1px 0 0 white) 
+    drop-shadow(-1px 0 0 white) 
+    drop-shadow(0 1px 0 white) 
+    drop-shadow(0 -1px 0 white);
+  
+  /* Ensures the lines look smooth at the corners */
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+/* county labels */
+.leaflet-tooltip.county-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* Kill the arrow completely */
+.leaflet-tooltip.county-label::before {
+  display: none !important;
+}
+.county-label {
+  font-size: var(--county-label-size, 14px); 
+  
+  color: #333333;
+  font-weight: 700;
+  text-shadow: 0 0 3px rgba(255,255,255,0.9);
+  -webkit-text-stroke: 2.5px white; 
+  paint-order: stroke fill;
+  white-space: nowrap; 
+  pointer-events: none !important;
+  transition: font-size 0.2s ease-out; /* Makes the size change smooth */
+}
+/* Hide the actual marker icon, only show the tooltip */
+.hidden-label-marker {
+  background: transparent;
+  border: none;
+  display: none;
+}
+
+/* Your existing tooltip styling */
+.leaflet-tooltip.county-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  color: #333333;
+  font-weight: 600;
+  text-shadow: 0 0 3px rgba(255,255,255,0.9);
+  pointer-events: none !important; 
+}
+
+.leaflet-tooltip.county-label::before {
+  display: none !important;
+}
+/* Style for the active drawing tool button */
+.zoom-to-mn.active-tool {
+  background-color: #78BE21 !important; /* Green */
+  /* color: white !important; */
+  color: var(--primary-color);
+}
+
+/* Ensure the icon inside turns white too */
+.zoom-to-mn.active-tool i {
+  color: var(--primary-color);
+}
+.contour-legend {
+    padding: 10px;
+    font-family: Calibri, sans-serif !important;
+    font-size: 12px;
+    background: white;
+    background: rgba(255,255,255,1);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    line-height: 18px;
+}
+.contour-legend-line {
+    display: inline-block;
+    width: 30px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+/* Color Toggle Button */
+.layer-color-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #ffffff;
+    border: 1px solid #cbd5e0;
+    border-radius: 20px;
+    padding: 3px 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: #4a5568;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.layer-color-toggle-btn:hover {
+    background: #f7fafc;
+    border-color: #a0aec0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.layer-color-toggle-btn:active {
+    transform: translateY(1px);
+}
+
+/* The small color circle inside the button */
+.color-swatch-circle {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* Optional: Add a little spacing between groups */
+.layer-group-header:not(:first-child) {
+    margin-top: 15px;
+}
+
+/* Enhanced Header Style for Toggling */
+.layer-group-header {
+    background-color: #f4f4f4;
+    padding: 6px 10px;
+    
+    /* Match negative margins EXACTLY to the fieldset padding (8px) */
+    margin: 8px -8px 8px -8px; 
+    
+    /* Set width to compensate for that 8px on each side */
+    width: calc(100% + 16px); 
+    
+    /* Add green borders to the sides and bottom */
+    border-left: 1px solid var(--accent-color);
+    border-right: 1px solid var(--accent-color);
+    border-bottom: 1px solid var(--accent-color);
+    border-top: 1px solid var(--accent-color); 
+    
+    box-sizing: border-box;
+    display: flex; 
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #003865;
+    transition: background-color 0.2s;
+    user-select: none;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+.layer-group-header:first-of-type {
+    margin-top: -5px; 
+}
+
+.layer-group-header:hover {
+    background-color: #ebebeb;
+}
+
+/* Icon rotation styling */
+.toggle-icon {
+    font-size: 10px;
+    transition: transform 0.2s;
+    color: #666;
+}
+
+/* Color Ramp Container */
+.elevation-ramp-container {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    margin-top: 8px;
+    height: 100px;
+}
+
+/* The actual gradient bar */
+.elevation-ramp-bar {
+    width: 20px;
+    border: 1px solid #999;
+    border-radius: 2px;
+}
+
+/* Labels for High and Low */
+.elevation-ramp-labels {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: bold;
+    color: #444;
+}
+
+/* Gradient for Accessible DEM */
+.ramp-accessible {
+    background: linear-gradient(to top, rgb(8, 104, 172), rgb(67, 162, 202), rgb(123, 204, 196), rgb(186, 228, 188), rgb(240, 249, 232));
+}
+
+/* Gradient for Terrain DEM */
+.ramp-terrain {
+    background: linear-gradient(to top, #AFF0E9, #FFFFB2, #008040, #F7C823, #800000, #7A3F12, #B9B9B9, #FDFDFE);
+}
+
+/* Gradient for 1st Gen DEM */
+.ramp-1stgen {
+    background: linear-gradient(to top, #0000ff, #00ff00, #ffff00, #ff0000, #ffffff);
+}
+/* Gradient for Grayscale DEM */
+.ramp-grayscale {
+    background: #000; /* Fallback color */
+    background: linear-gradient(to top, 
+        rgb(0, 0, 0) 0%, 
+        rgb(255, 255, 255) 100%
+    ) !important;
+}
+/* ============================================================
+   CONSOLIDATED LAYER PANEL STYLING (FIXES DOUBLE SCROLLBARS & Z-INDEX)
+   ============================================================ */
+
+/* 0. FORCE THE TOP-RIGHT CONTAINER TO BE HIGHER THAN THE BOTTOM-RIGHT */
+.leaflet-top.leaflet-right {
+    z-index: 1100 !important; /* Higher than Leaflet's default 1000 */
+}
+
+/* 1. The Root Container (Collapsed State) */
+.leaflet-control-layers {
+    background-color: white !important;
+    border-radius: 6px;
+    color: var(--primary-color);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    overflow: hidden !important; 
+    z-index: 1100 !important;
+}
+
+/* 2. The Expanded Panel (The ONLY place scrolling should happen) */
+.leaflet-control-layers-expanded {
+    min-width: 240px;
+    max-width: 310px;
+    padding: 10px !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 2px solid rgba(0, 0, 0, 0.2) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    
+    /* Ensure it sits on top of all other map elements */
+    z-index: 1100 !important; 
+
+    /* Height Logic */
+    height: auto !important; 
+    max-height: 75vh !important; 
+    
+    /* Scrolling Logic */
+    overflow-y: auto !important; 
+    overflow-x: hidden !important;
+    display: block !important;
+}
+
+/* 3. Internal Lists (FORCED TO OVERFLOW VISIBLE) */
+.leaflet-control-layers-expanded .leaflet-control-layers-list, 
+.leaflet-control-layers-expanded .leaflet-control-layers-overlays, 
+.leaflet-control-layers-expanded .leaflet-control-layers-base {
+    height: auto !important;
+    overflow: visible !important; 
+    display: block !important;
+}
+
+/* Hide the list when not expanded */
+.leaflet-control-layers:not(.leaflet-control-layers-expanded) .leaflet-control-layers-list {
+    display: none;
+}
+
+/* 4. Fieldsets inside the list */
+.leaflet-control-layers fieldset {
+    height: auto !important;
+    min-height: 0 !important;
+    border: 1px solid var(--accent-color);
+    border-radius: 4px;                 
+    padding: 5px 8px;
+    margin-bottom: 6px;
+    width: auto !important;
+}
+
+/* 5. Custom Blue Scrollbar & Removal of Browser Arrows */
+.leaflet-control-layers-expanded::-webkit-scrollbar {
+    width: 7px;
+}
+.leaflet-control-layers-expanded::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+.leaflet-control-layers-expanded::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+}
+.leaflet-control-layers-expanded::-webkit-scrollbar-button {
+    display: none !important;
+    height: 0;
+}
+
+/* 6. Mobile Adjustments */
+@media (max-width: 768px) {
+    .leaflet-control-layers-expanded {
+        max-height: 60vh !important;
+        width: 240px;
+        min-width: 200px;
+    }
+    .leaflet-control-layers-selector {
+        transform: scale(1.3);
+        margin-right: 10px !important;
+    }
+}
+/* 
+   Make all contour and status panes "click-through." 
+   This allows the profile line tool to work even when these layers are visible.
+*/
+.leaflet-pane50ft-pane, 
+.leaflet-pane10ft-pane, 
+.leaflet-pane2ft-pane,
+.leaflet-contourPane-pane,
+.leaflet-femaPane-pane,
+.leaflet-statusPane-pane {
+    pointer-events: none !important;
+}
+
+/* 
+   Crucial: Ensure the map itself and the drawing tool layers 
+   RETAIN their ability to be clicked.
+*/
+.leaflet-map-pane canvas,
+.leaflet-overlay-pane, 
+.leaflet-marker-pane, 
+.leaflet-popup-pane {
+    pointer-events: auto !important;
+}

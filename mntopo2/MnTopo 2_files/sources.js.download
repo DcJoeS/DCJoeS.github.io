@@ -1,0 +1,15 @@
+// Layer URLs for use in the MnTopo site
+const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const satelliteUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const demLayerUrl = 'https://enterprise.gisdata.mn.gov/agsimg/rest/services/MnTopo/2nd_Generation_Seamless_Lidar_DEM/ImageServer';
+const FLIGHT_URL = 'https://enterprise.gisdata.mn.gov/aghost/rest/services/MnTOPO_Flight_Swaths/FeatureServer/0';
+const contours2ftUrl = 'https://enterprise.gisdata.mn.gov/aghost/rest/services/MnTopo/1st_Generation_2ft_Contours/VectorTileServer';
+const contours10ftUrl = 'https://enterprise.gisdata.mn.gov/aghost/rest/services/1st_Generation_10ft_Contours/MapServer';
+const contours50ftUrl = 'https://enterprise.gisdata.mn.gov/aghost/rest/services/MnTopo/1st_Generation_50ft_contours/VectorTileServer';
+const hillshadeUrl = 'https://enterprise.gisdata.mn.gov/aghost/rest/services/1st_Generation_Hillshade/MapServer';
+const femaUrl1 = 'https://enterprise.gisdata.mn.gov/aghost/rest/services/us_mn_state_dnr/water_dnr_fema_dfirm/FeatureServer/5';
+const femaUrl2 = 'https://enterprise.gisdata.mn.gov/aghost/rest/services/us_mn_state_dnr/water_dnr_fema_dfirm/FeatureServer/4';
+const lidarIndexUrl = "https://enterprise.gisdata.mn.gov/aghost/rest/services/us_mn_state_mngeo/bdry_counties_minnesota/FeatureServer/0"; 
+const demLayer1stGenUrl = 'https://enterprise.gisdata.mn.gov/aghost/rest/services/elevation_mn_1mDEM_cache/MapServer';
+const flightLines1stGenUrl = 'https://enterprise.gisdata.mn.gov/aghost/rest/services/Hosted/Minnesota_First_Generation_Lidar_Flight_Lines/FeatureServer/0';
+const roadCenterlinesUrl = 'https://arcgis.metc.state.mn.us/data2/rest/services/transportation/Road_Centerlines/FeatureServer/0';

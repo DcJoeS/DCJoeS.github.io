@@ -1820,20 +1820,23 @@ function interpolateFixedPoints(latlngs, numPoints) {
 
 let currentProfileLine = null;
 let profileRoadCrossings = [];
-let profileRoadQueryId = 0;
+let profileWaterwayCrossings = [];
+let profileCrossingQueryId = 0;
 const profileRoadLayer = L.layerGroup().addTo(map);
 
 function clearProfileRoadCrossings() {
   profileRoadCrossings = [];
+  profileWaterwayCrossings = [];
   profileRoadLayer.clearLayers();
 }
 
 function renderProfileRoadCrossings() {
   profileRoadLayer.clearLayers();
-  profileRoadCrossings.forEach(crossing => {
+  [...profileRoadCrossings, ...profileWaterwayCrossings].forEach(crossing => {
+    const isWaterway = crossing.type === 'waterway';
     L.circleMarker([crossing.lat, crossing.lon], {
       radius: 5,
-      color: '#A6192E',
+      color: isWaterway ? '#007a78' : '#A6192E',
       weight: 2,
       fillColor: '#fff',
       fillOpacity: 1
@@ -1841,27 +1844,47 @@ function renderProfileRoadCrossings() {
       permanent: true,
       direction: 'top',
       offset: [0, -5],
-      className: 'profile-road-label'
+      className: isWaterway ? 'profile-waterway-label' : 'profile-road-label'
     }).addTo(profileRoadLayer);
   });
 }
 
-async function findProfileRoadCrossings(line, queryId) {
+function profileLineQueryParams(line, outFields) {
   const coordinates = line.getLatLngs().map(latlng => [latlng.lng, latlng.lat]);
-  const params = new URLSearchParams({
-    f: 'geojson',
-    geometry: JSON.stringify({ paths: [coordinates], spatialReference: { wkid: 4326 } }),
-    geometryType: 'esriGeometryPolyline',
-    inSR: '4326',
-    spatialRel: 'esriSpatialRelIntersects',
-    outFields: 'ST_CONCAT',
-    returnGeometry: 'true',
-    outSR: '4326'
-  });
+  return {
+    coordinates,
+    params: new URLSearchParams({
+      f: 'geojson',
+      geometry: JSON.stringify({ paths: [coordinates], spatialReference: { wkid: 4326 } }),
+      geometryType: 'esriGeometryPolyline',
+      inSR: '4326',
+      spatialRel: 'esriSpatialRelIntersects',
+      outFields,
+      returnGeometry: 'true',
+      outSR: '4326'
+    })
+  };
+}
+
+function crossingFromIntersection(profileFeature, intersection, name, type) {
+  const nearest = turf.nearestPointOnLine(profileFeature, intersection, { units: 'meters' });
+  const distance = Number(nearest.properties?.location);
+  if (!Number.isFinite(distance)) return null;
+  return {
+    name,
+    type,
+    distance,
+    lat: intersection.geometry.coordinates[1],
+    lon: intersection.geometry.coordinates[0]
+  };
+}
+
+async function findProfileRoadCrossings(line, queryId) {
+  const { coordinates, params } = profileLineQueryParams(line, 'ST_CONCAT');
   const response = await fetch(`${roadCenterlinesUrl}/query?${params}`);
   if (!response.ok) throw new Error(`Road service returned ${response.status}`);
   const data = await response.json();
-  if (queryId !== profileRoadQueryId) return [];
+  if (queryId !== profileCrossingQueryId) return [];
 
   const profileFeature = turf.lineString(coordinates);
   const crossings = [];
@@ -1872,61 +1895,93 @@ async function findProfileRoadCrossings(line, queryId) {
       ? turf.multiLineString(feature.geometry.coordinates)
       : turf.lineString(feature.geometry.coordinates);
     turf.lineIntersect(profileFeature, geometry).features.forEach(intersection => {
-      const nearest = turf.nearestPointOnLine(profileFeature, intersection, { units: 'meters' });
-      const distance = Number(nearest.properties?.location);
-      if (!Number.isFinite(distance)) return;
-      if (!crossings.some(crossing => crossing.name === name)) {
-        crossings.push({
-          name,
-          distance,
-          lat: intersection.geometry.coordinates[1],
-          lon: intersection.geometry.coordinates[0]
-        });
-      }
+      const crossing = crossingFromIntersection(profileFeature, intersection, name, 'road');
+      if (crossing && !crossings.some(existing => existing.name === name)) crossings.push(crossing);
+    });
+  });
+  return crossings.sort((a, b) => a.distance - b.distance);
+}
+
+async function findProfileWaterwayCrossings(line, queryId) {
+  const { coordinates, params } = profileLineQueryParams(line, 'label');
+  const response = await fetch(`${waterwaysUrl}/query?${params}`);
+  if (!response.ok) throw new Error(`Waterway service returned ${response.status}`);
+  const data = await response.json();
+  if (queryId !== profileCrossingQueryId) return [];
+
+  const profileFeature = turf.lineString(coordinates);
+  const crossings = [];
+  (data.features || []).forEach(feature => {
+    const name = String(feature.properties?.label || feature.properties?.LABEL || '').trim();
+    if (!name || !feature.geometry) return;
+    const geometry = feature.geometry;
+    let lines = [];
+    if (geometry.type === 'LineString') {
+      lines = [turf.lineString(geometry.coordinates)];
+    } else if (geometry.type === 'MultiLineString') {
+      lines = geometry.coordinates.map(coordinates => turf.lineString(coordinates));
+    } else if (geometry.type === 'Polygon') {
+      lines = geometry.coordinates.map(ring => turf.lineString(ring));
+    } else if (geometry.type === 'MultiPolygon') {
+      lines = geometry.coordinates.flatMap(polygon => polygon.map(ring => turf.lineString(ring)));
+    }
+    lines.forEach(waterwayLine => {
+      turf.lineIntersect(profileFeature, waterwayLine).features.forEach(intersection => {
+        const crossing = crossingFromIntersection(profileFeature, intersection, name, 'waterway');
+        if (crossing) crossings.push(crossing);
+      });
     });
   });
   return crossings.sort((a, b) => a.distance - b.distance);
 }
 
 function refreshProfileRoadCrossings() {
-  profileRoadQueryId += 1;
-  const queryId = profileRoadQueryId;
+  profileCrossingQueryId += 1;
+  const queryId = profileCrossingQueryId;
   clearProfileRoadCrossings();
-  if (!currentProfileLine || !document.getElementById('show-road-crossings')?.checked) {
+  const roadToggle = document.getElementById('show-road-crossings');
+  const waterwayToggle = document.getElementById('show-waterway-crossings');
+  if (!currentProfileLine || (!roadToggle?.checked && !waterwayToggle?.checked)) {
     if (window.elevChart) window.elevChart.update();
     return;
   }
-  findProfileRoadCrossings(currentProfileLine, queryId)
-    .then(crossings => {
-      if (queryId !== profileRoadQueryId) return;
-      profileRoadCrossings = crossings;
+
+  const queries = [];
+  if (roadToggle?.checked) queries.push(findProfileRoadCrossings(currentProfileLine, queryId)
+    .then(crossings => ({ type: 'road', crossings }))
+    .catch(() => ({ type: 'road', crossings: [] })));
+  if (waterwayToggle?.checked) queries.push(findProfileWaterwayCrossings(currentProfileLine, queryId)
+    .then(crossings => ({ type: 'waterway', crossings }))
+    .catch(() => ({ type: 'waterway', crossings: [] })));
+  Promise.all(queries)
+    .then(results => {
+      if (queryId !== profileCrossingQueryId) return;
+      results.forEach(result => {
+        if (result.type === 'road') profileRoadCrossings = result.crossings;
+        if (result.type === 'waterway') profileWaterwayCrossings = result.crossings;
+      });
       renderProfileRoadCrossings();
       if (window.elevChart) window.elevChart.update();
     })
-    .catch(() => {
-      if (queryId !== profileRoadQueryId) return;
-      clearProfileRoadCrossings();
-      if (window.elevChart) window.elevChart.update();
-    });
 }
 
 const profileRoadCrossingPlugin = {
   id: 'profileRoadCrossings',
   afterDraw(chart) {
-    if (!profileRoadCrossings.length || !window.lastElevations1stGen?.length) return;
+    const crossings = [...profileRoadCrossings, ...profileWaterwayCrossings];
+    if (!crossings.length || !window.lastElevations1stGen?.length) return;
     const totalDistance = window.lastElevations1stGen[window.lastElevations1stGen.length - 1].dist;
     const xScale = chart.scales.x;
     const context = chart.ctx;
     context.save();
-    context.strokeStyle = '#A6192E';
-    context.fillStyle = '#A6192E';
-    context.font = 'bold 14px Calibri, sans-serif';
-    profileRoadCrossings.forEach(crossing => {
+    crossings.forEach(crossing => {
+      const color = crossing.type === 'waterway' ? '#007a78' : '#A6192E';
       const x = xScale.getPixelForValue(xScale.max * (crossing.distance / totalDistance));
       context.beginPath();
       context.setLineDash([4, 4]);
       context.moveTo(x, chart.chartArea.top);
       context.lineTo(x, chart.chartArea.bottom);
+      context.strokeStyle = color;
       context.stroke();
       context.setLineDash([]);
       context.save();
@@ -1937,7 +1992,7 @@ const profileRoadCrossingPlugin = {
       context.lineWidth = 3;
       context.strokeStyle = 'white';
       context.strokeText(label, 0, 0);
-      context.fillStyle = '#A6192E';
+      context.fillStyle = color;
       context.fillText(label, 0, 0);
       context.restore();
     });
@@ -1967,8 +2022,10 @@ map.on(L.Draw.Event.CREATED, async function (event) {
   drawnItems.clearLayers();
   profilePanel.classList.remove('visible');
   const roadToggle = document.getElementById('show-road-crossings');
+  const waterwayToggle = document.getElementById('show-waterway-crossings');
   if (roadToggle) roadToggle.checked = false;
-  profileRoadQueryId += 1;
+  if (waterwayToggle) waterwayToggle.checked = false;
+  profileCrossingQueryId += 1;
   currentProfileLine = null;
   clearProfileRoadCrossings();
 
@@ -2626,7 +2683,9 @@ document.querySelectorAll('input[name="units"], input[name="gen-source"]').forEa
     showProfileChart(); 
   });
 });
-document.getElementById('show-road-crossings').addEventListener('change', refreshProfileRoadCrossings);
+document.querySelectorAll('#show-road-crossings, #show-waterway-crossings').forEach(toggle => {
+  toggle.addEventListener('change', refreshProfileRoadCrossings);
+});
 // CSV Export Logic
 function exportToCSV(elevations, filename) {
   if (!elevations || elevations.filter(e => e && e.elev !== null).length === 0) {
@@ -2663,9 +2722,12 @@ function resetMapDrawing() {
   profilePanel.classList.remove('visible');
   if (spinner) spinner.style.display = 'none';
   if (activeAbortController) activeAbortController.abort();
-  profileRoadQueryId += 1;
+  profileCrossingQueryId += 1;
   currentProfileLine = null;
   clearProfileRoadCrossings();
+  document.getElementById('show-road-crossings').checked = false;
+  document.getElementById('show-waterway-crossings').checked = false;
+  profilePanel.setAttribute('aria-hidden', 'true');
   window.lastElevations2ndGen = null;
   window.lastElevations1stGen = null;
   if (window.elevChart) { window.elevChart.destroy(); window.elevChart = null; }
@@ -2740,8 +2802,14 @@ function resetMapDrawing() {
   drawnItems.clearLayers();
   if (customMarker) { map.removeLayer(customMarker); customMarker = null; }
   profilePanel.classList.remove('visible');
+  profilePanel.setAttribute('aria-hidden', 'true');
   if (spinner) spinner.style.display = 'none';
   if (activeAbortController) activeAbortController.abort();
+  profileCrossingQueryId += 1;
+  currentProfileLine = null;
+  clearProfileRoadCrossings();
+  document.getElementById('show-road-crossings').checked = false;
+  document.getElementById('show-waterway-crossings').checked = false;
 
   window.lastElevations2ndGen = null;
   window.lastElevations1stGen = null;

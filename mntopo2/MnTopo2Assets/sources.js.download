@@ -13,3 +13,4 @@ const lidarIndexUrl = "https://enterprise.gisdata.mn.gov/aghost/rest/services/us
 const demLayer1stGenUrl = 'https://enterprise.gisdata.mn.gov/aghost/rest/services/elevation_mn_1mDEM_cache/MapServer';
 const flightLines1stGenUrl = 'https://enterprise.gisdata.mn.gov/aghost/rest/services/Hosted/Minnesota_First_Generation_Lidar_Flight_Lines/FeatureServer/0';
 const roadCenterlinesUrl = 'https://arcgis.metc.state.mn.us/data2/rest/services/transportation/Road_Centerlines/FeatureServer/0';
+const waterwaysUrl = 'https://enterprise.gisdata.mn.gov/aghost/rest/services/us_mn_state_dnr/water_measured_kittle_routes/FeatureServer/0';

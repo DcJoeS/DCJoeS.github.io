@@ -138,6 +138,10 @@ html, body {
   font-weight: bold;
   margin-right: 5px;
 }
+.road-toggle span {
+  font-weight: bold;
+  margin-right: 5px;
+}
 .gen-toggle label,
 .road-toggle label {
   cursor: pointer;
